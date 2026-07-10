@@ -10,9 +10,7 @@ Use app.services.llm.factory.get_llm_provider() instead.
 
 from __future__ import annotations
 
-import asyncio
-from collections.abc import AsyncGenerator
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import structlog
 from tenacity import (
@@ -25,6 +23,9 @@ from tenacity import (
 from app.core.config import get_settings
 from app.core.exceptions import LLMUnavailableError
 from app.services.llm.base import LLMProvider, LLMResponse, LLMUsage, Message, ModelInfo
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
 
 logger = structlog.get_logger(__name__)
 settings = get_settings()
@@ -159,9 +160,7 @@ class AnthropicProvider(LLMProvider):
 
         except Exception as exc:
             logger.error("llm.stream.failed", provider="anthropic", error=str(exc))
-            raise LLMUnavailableError(
-                f"Anthropic streaming error: {exc}"
-            ) from exc
+            raise LLMUnavailableError(f"Anthropic streaming error: {exc}") from exc
 
     async def health_check(self) -> bool:
         """Verify Anthropic API connectivity with a minimal request."""

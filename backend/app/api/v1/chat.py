@@ -12,16 +12,19 @@ Endpoints:
 from __future__ import annotations
 
 import json
-import uuid
-from collections.abc import AsyncGenerator
 from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 import structlog
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from app.api.deps import AgentRepo, CurrentUser, LLM
+if TYPE_CHECKING:
+    import uuid
+    from collections.abc import AsyncGenerator
+
+    from app.api.deps import LLM, AgentRepo, CurrentUser
 
 logger = structlog.get_logger(__name__)
 router = APIRouter(prefix="/chat")
@@ -129,7 +132,7 @@ async def send_message(
                 Message(role="user", content=body.content),
             ]
 
-            async for token in await llm.stream(messages):
+            async for token in llm.stream(messages):
                 full_response += token
                 event = json.dumps({"type": "token", "content": token})
                 yield f"data: {event}\n\n"
@@ -150,7 +153,7 @@ async def send_message(
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
-            "X-Accel-Buffering": "no",     # Disable Nginx buffering
+            "X-Accel-Buffering": "no",  # Disable Nginx buffering
             "Connection": "keep-alive",
         },
     )
@@ -161,7 +164,7 @@ def _session_response(s: object) -> SessionResponse:
     return SessionResponse(
         id=str(getattr(s, "id", "")),
         title=getattr(s, "title", ""),
-        repository_id=str(getattr(s, "repository_id")) if getattr(s, "repository_id", None) else None,
+        repository_id=str(getattr(s, "repository_id", "")) if getattr(s, "repository_id", None) else None,
         message_count=len(messages),
         created_at=getattr(s, "created_at", datetime.now(UTC)).isoformat(),
         updated_at=getattr(s, "updated_at", datetime.now(UTC)).isoformat(),

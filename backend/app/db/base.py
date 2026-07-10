@@ -10,20 +10,22 @@ Provides:
 
 from __future__ import annotations
 
-from collections.abc import AsyncGenerator
-from typing import Any
+from typing import TYPE_CHECKING
 
 import structlog
-from sqlalchemy import MetaData, event, text
+from sqlalchemy import MetaData, text
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
     async_sessionmaker,
     create_async_engine,
 )
-from sqlalchemy.orm import DeclarativeBase, MappedColumn
+from sqlalchemy.orm import DeclarativeBase
 
 from app.core.config import get_settings
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
 
 logger = structlog.get_logger(__name__)
 settings = get_settings()
@@ -82,8 +84,8 @@ async def init_db() -> None:
         echo=settings.app_debug,
         pool_size=10,
         max_overflow=20,
-        pool_pre_ping=True,         # Re-validate connections before use
-        pool_recycle=3600,          # Recycle connections every hour
+        pool_pre_ping=True,  # Re-validate connections before use
+        pool_recycle=3600,  # Recycle connections every hour
         connect_args={
             "server_settings": {
                 "application_name": "cartographer",
@@ -94,7 +96,7 @@ async def init_db() -> None:
     _session_factory = async_sessionmaker(
         _engine,
         class_=AsyncSession,
-        expire_on_commit=False,     # Avoid lazy-load after commit
+        expire_on_commit=False,  # Avoid lazy-load after commit
         autocommit=False,
         autoflush=False,
     )
@@ -106,7 +108,10 @@ async def init_db() -> None:
         await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
         await conn.commit()
 
-    logger.info("db.connected", url=settings.database_url.split("@")[-1] if settings.database_url else "unknown")
+    logger.info(
+        "db.connected",
+        url=settings.database_url.split("@")[-1] if settings.database_url else "unknown",
+    )
 
 
 async def close_db() -> None:

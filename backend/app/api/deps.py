@@ -14,22 +14,22 @@ Pattern:
 from __future__ import annotations
 
 import uuid
-from typing import Annotated
+from typing import Annotated, Any
 
 import structlog
-from fastapi import Depends, Header, HTTPException, status
+from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import AuthenticationError
 from app.core.security import decode_token
 from app.db.base import get_session
+from app.db.models.user import User
 from app.db.repositories.agent_repo import AgentRepository
 from app.db.repositories.chunk_repo import ChunkRepository
 from app.db.repositories.graph_repo import GraphRepository
 from app.db.repositories.repository_repo import RepositoryRepository
 from app.db.repositories.user_repo import UserRepository
-from app.db.models.user import User
 from app.services.cache.redis_service import CacheService, get_redis
 from app.services.embedding.base import EmbeddingProvider
 from app.services.embedding.factory import get_embedding_provider
@@ -49,20 +49,26 @@ DbSession = Annotated[AsyncSession, Depends(get_session)]
 # Repositories
 # ---------------------------------------------------------------------------
 
+
 def get_user_repo(db: DbSession) -> UserRepository:
     return UserRepository(db)
+
 
 def get_repository_repo(db: DbSession) -> RepositoryRepository:
     return RepositoryRepository(db)
 
+
 def get_chunk_repo(db: DbSession) -> ChunkRepository:
     return ChunkRepository(db)
+
 
 def get_graph_repo(db: DbSession) -> GraphRepository:
     return GraphRepository(db)
 
+
 def get_agent_repo(db: DbSession) -> AgentRepository:
     return AgentRepository(db)
+
 
 UserRepo = Annotated[UserRepository, Depends(get_user_repo)]
 RepositoryRepo = Annotated[RepositoryRepository, Depends(get_repository_repo)]
@@ -74,8 +80,10 @@ AgentRepo = Annotated[AgentRepository, Depends(get_agent_repo)]
 # Cache
 # ---------------------------------------------------------------------------
 
-async def get_cache(redis=Depends(get_redis)) -> CacheService:  # type: ignore[type-arg]
+
+async def get_cache(redis: Any = Depends(get_redis)) -> CacheService:  # type: ignore[type-arg]
     return CacheService(redis)
+
 
 Cache = Annotated[CacheService, Depends(get_cache)]
 
@@ -83,11 +91,14 @@ Cache = Annotated[CacheService, Depends(get_cache)]
 # LLM + Embedding providers (singletons resolved by factories)
 # ---------------------------------------------------------------------------
 
+
 def get_llm() -> LLMProvider:
     return get_llm_provider()
 
+
 def get_embedder() -> EmbeddingProvider:
     return get_embedding_provider()
+
 
 LLM = Annotated[LLMProvider, Depends(get_llm)]
 Embedder = Annotated[EmbeddingProvider, Depends(get_embedder)]
@@ -95,6 +106,7 @@ Embedder = Annotated[EmbeddingProvider, Depends(get_embedder)]
 # ---------------------------------------------------------------------------
 # Retrieval Services
 # ---------------------------------------------------------------------------
+
 
 def get_hybrid_retriever(
     chunk_repo: ChunkRepo,
@@ -109,11 +121,13 @@ def get_hybrid_retriever(
         llm_provider=llm,
     )
 
+
 Retriever = Annotated[HybridRetriever, Depends(get_hybrid_retriever)]
 
 # ---------------------------------------------------------------------------
 # Authentication
 # ---------------------------------------------------------------------------
+
 
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),

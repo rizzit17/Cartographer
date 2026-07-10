@@ -12,18 +12,21 @@ Pattern:
 
 from __future__ import annotations
 
-from typing import Any, Generic, TypeVar
-from uuid import UUID
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.base import Base
+
+if TYPE_CHECKING:
+    from uuid import UUID
+
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 ModelT = TypeVar("ModelT", bound=Base)
 
 
-class BaseRepository(Generic[ModelT]):
+class BaseRepository[ModelT: Base]:
     """
     Generic repository providing async CRUD for any SQLAlchemy model.
 
@@ -57,7 +60,7 @@ class BaseRepository(Generic[ModelT]):
         """Create and persist a new record."""
         obj = self.model(**kwargs)
         self._session.add(obj)
-        await self._session.flush()   # Get the PK without committing
+        await self._session.flush()  # Get the PK without committing
         await self._session.refresh(obj)
         return obj
 
@@ -84,6 +87,7 @@ class BaseRepository(Generic[ModelT]):
     async def count(self) -> int:
         """Return total row count for the model table."""
         from sqlalchemy import func  # noqa: PLC0415
+
         stmt = select(func.count()).select_from(self.model)
         result = await self._session.execute(stmt)
         return result.scalar_one()

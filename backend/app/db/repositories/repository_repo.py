@@ -6,12 +6,15 @@ Domain-specific queries for the Repository model.
 
 from __future__ import annotations
 
-import uuid
+from typing import TYPE_CHECKING
 
 from sqlalchemy import select
 
 from app.db.models.repository import Repository
 from app.db.repositories.base import BaseRepository
+
+if TYPE_CHECKING:
+    import uuid
 
 
 class RepositoryRepository(BaseRepository[Repository]):
@@ -31,9 +34,7 @@ class RepositoryRepository(BaseRepository[Repository]):
         return list(result.scalars().all())
 
     async def get_by_url(self, url: str, owner_id: uuid.UUID) -> Repository | None:
-        stmt = select(Repository).where(
-            Repository.url == url, Repository.owner_id == owner_id
-        )
+        stmt = select(Repository).where(Repository.url == url, Repository.owner_id == owner_id)
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()
 
@@ -44,8 +45,7 @@ class RepositoryRepository(BaseRepository[Repository]):
 
     async def count_by_owner(self, owner_id: uuid.UUID) -> int:
         from sqlalchemy import func  # noqa: PLC0415
-        stmt = select(func.count()).select_from(Repository).where(
-            Repository.owner_id == owner_id
-        )
+
+        stmt = select(func.count()).select_from(Repository).where(Repository.owner_id == owner_id)
         result = await self._session.execute(stmt)
         return result.scalar_one()

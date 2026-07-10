@@ -8,15 +8,19 @@ to ChunkRepository.vector_search().
 
 from __future__ import annotations
 
-import uuid
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import structlog
 
 from app.core.config import get_settings
-from app.db.models.chunk import CodeChunk
-from app.db.repositories.chunk_repo import ChunkRepository
-from app.services.embedding.base import EmbeddingProvider
+
+if TYPE_CHECKING:
+    import uuid
+
+    from app.db.models.chunk import CodeChunk
+    from app.db.repositories.chunk_repo import ChunkRepository
+    from app.services.embedding.base import EmbeddingProvider
 
 logger = structlog.get_logger(__name__)
 settings = get_settings()

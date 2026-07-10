@@ -7,14 +7,16 @@ Provides graph traversal primitives used by the GraphRetriever service.
 
 from __future__ import annotations
 
-import uuid
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import select, text
 
 from app.db.models.graph_edge import GraphEdge
 from app.db.models.graph_node import GraphNode
 from app.db.repositories.base import BaseRepository
+
+if TYPE_CHECKING:
+    import uuid
 
 
 class GraphRepository(BaseRepository[GraphNode]):
@@ -130,17 +132,18 @@ class GraphRepository(BaseRepository[GraphNode]):
     async def count_by_repository(self, repo_id: uuid.UUID) -> int:
         """Return total node count for a repository."""
         from sqlalchemy import func  # noqa: PLC0415
-        stmt = select(func.count()).select_from(GraphNode).where(
-            GraphNode.repository_id == repo_id
-        )
+
+        stmt = select(func.count()).select_from(GraphNode).where(GraphNode.repository_id == repo_id)
         result = await self._session.execute(stmt)
         return result.scalar_one()
 
     async def delete_by_repository(self, repo_id: uuid.UUID) -> None:
         """Delete all graph data for a repository."""
         await self._session.execute(
-            text("DELETE FROM graph_edges WHERE source_id IN "
-                 "(SELECT id FROM graph_nodes WHERE repository_id = :repo_id)"),
+            text(
+                "DELETE FROM graph_edges WHERE source_id IN "
+                "(SELECT id FROM graph_nodes WHERE repository_id = :repo_id)"
+            ),
             {"repo_id": repo_id},
         )
         await self._session.execute(

@@ -15,12 +15,11 @@ Never import directly — use embedding factory.
 from __future__ import annotations
 
 import asyncio
-from functools import lru_cache
 
 import structlog
 
 from app.core.config import get_settings
-from app.core.exceptions import EmbeddingError, ProviderConfigurationError
+from app.core.exceptions import ProviderConfigurationError
 from app.services.embedding.base import EmbeddingModelInfo, EmbeddingProvider
 
 logger = structlog.get_logger(__name__)
@@ -72,7 +71,7 @@ class BGEEmbeddingProvider(EmbeddingProvider):
         loop = asyncio.get_event_loop()
         vectors = await loop.run_in_executor(
             None,
-            lambda: self._model.encode(  # type: ignore[union-attr]
+            lambda: self._model.encode(  # type: ignore[union-attr,attr-defined]
                 texts,
                 normalize_embeddings=True,
                 show_progress_bar=False,

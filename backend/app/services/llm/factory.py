@@ -11,12 +11,15 @@ Provider selection is driven entirely by the LLM_PROVIDER env var.
 from __future__ import annotations
 
 from functools import lru_cache
+from typing import TYPE_CHECKING
 
 import structlog
 
 from app.core.config import get_settings
 from app.core.exceptions import ProviderConfigurationError
-from app.services.llm.base import LLMProvider
+
+if TYPE_CHECKING:
+    from app.services.llm.base import LLMProvider
 
 logger = structlog.get_logger(__name__)
 
@@ -48,7 +51,10 @@ def get_llm_provider() -> LLMProvider:
                 raise ProviderConfigurationError(
                     "ANTHROPIC_API_KEY is required when LLM_PROVIDER=anthropic"
                 )
-            from app.services.llm.providers.anthropic_provider import AnthropicProvider  # noqa: PLC0415
+            from app.services.llm.providers.anthropic_provider import (
+                AnthropicProvider,  # noqa: PLC0415
+            )
+
             return AnthropicProvider()
 
         case "openai":
@@ -57,6 +63,7 @@ def get_llm_provider() -> LLMProvider:
                     "OPENAI_API_KEY is required when LLM_PROVIDER=openai"
                 )
             from app.services.llm.providers.openai_provider import OpenAIProvider  # noqa: PLC0415
+
             return OpenAIProvider()
 
         case "ollama":
@@ -65,10 +72,10 @@ def get_llm_provider() -> LLMProvider:
                     "Set OLLAMA_ENABLED=true to use the Ollama provider"
                 )
             from app.services.llm.providers.ollama_provider import OllamaProvider  # noqa: PLC0415
+
             return OllamaProvider()
 
         case _:
             raise ProviderConfigurationError(
-                f"Unknown LLM provider: '{provider_name}'. "
-                "Valid values: anthropic, openai, ollama"
+                f"Unknown LLM provider: '{provider_name}'. Valid values: anthropic, openai, ollama"
             )

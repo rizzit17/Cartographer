@@ -11,8 +11,8 @@ Architecture: Clean Architecture with Dependency Injection via FastAPI Depends.
 from __future__ import annotations
 
 import time
-from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+from typing import TYPE_CHECKING
 
 import structlog
 from fastapi import FastAPI, Request, Response
@@ -36,6 +36,9 @@ from app.core.logging import configure_logging
 from app.core.telemetry import configure_telemetry
 from app.db.base import close_db, init_db
 from app.services.cache.redis_service import close_redis, init_redis
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
 
 logger = structlog.get_logger(__name__)
 settings = get_settings()
@@ -144,9 +147,7 @@ def create_app() -> FastAPI:
         )
 
     @app.exception_handler(Exception)
-    async def unhandled_exception_handler(
-        request: Request, exc: Exception
-    ) -> JSONResponse:
+    async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
         logger.exception("unhandled.exception", exc_info=exc)
         return JSONResponse(
             status_code=500,

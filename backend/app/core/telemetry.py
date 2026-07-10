@@ -91,6 +91,7 @@ def get_tracer(name: str) -> object:
 
         return trace.get_tracer(name)
     except ImportError:
+
         class _NoOpTracer:
             def start_as_current_span(self, *_: object, **__: object) -> object:
                 from contextlib import contextmanager

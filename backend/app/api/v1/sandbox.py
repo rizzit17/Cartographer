@@ -9,11 +9,13 @@ from __future__ import annotations
 
 import uuid
 from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 
-from app.api.deps import CurrentUser, RepositoryRepo
+if TYPE_CHECKING:
+    from app.api.deps import CurrentUser, RepositoryRepo
 
 router = APIRouter(prefix="/sandbox")
 

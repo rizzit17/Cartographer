@@ -14,16 +14,18 @@ LLM reranking.
 
 from __future__ import annotations
 
-import uuid
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import structlog
 
 from app.core.config import get_settings
-from app.services.retrieval.vector_retriever import VectorSearchResult
-from app.services.retrieval.keyword_retriever import KeywordSearchResult
 from app.services.retrieval.graph_retriever import GraphSearchResult
+from app.services.retrieval.keyword_retriever import KeywordSearchResult
+from app.services.retrieval.vector_retriever import VectorSearchResult
+
+if TYPE_CHECKING:
+    import uuid
 
 logger = structlog.get_logger(__name__)
 settings = get_settings()
@@ -37,6 +39,7 @@ _RRF_K = 60
 @dataclass
 class RankedResult:
     """A reranked retrieval result with merged metadata."""
+
     chunk_id: uuid.UUID
     file_path: str
     content: str
@@ -76,22 +79,22 @@ class Reranker:
         chunk_map: dict[uuid.UUID, AnyResult] = {}
 
         # Process each result list
-        for rank, result in enumerate(vector_results):
-            cid = result.chunk.id
+        for rank, v_result in enumerate(vector_results):
+            cid = v_result.chunk.id
             rrf_scores[cid] = rrf_scores.get(cid, 0.0) + 1.0 / (_RRF_K + rank + 1)
-            chunk_map[cid] = result
+            chunk_map[cid] = v_result
 
-        for rank, result in enumerate(keyword_results):
-            cid = result.chunk.id
+        for rank, k_result in enumerate(keyword_results):
+            cid = k_result.chunk.id
             rrf_scores[cid] = rrf_scores.get(cid, 0.0) + 1.0 / (_RRF_K + rank + 1)
             if cid not in chunk_map:
-                chunk_map[cid] = result
+                chunk_map[cid] = k_result
 
-        for rank, result in enumerate(graph_results):
-            cid = result.chunk.id
+        for rank, g_result in enumerate(graph_results):
+            cid = g_result.chunk.id
             rrf_scores[cid] = rrf_scores.get(cid, 0.0) + 1.0 / (_RRF_K + rank + 1)
             if cid not in chunk_map:
-                chunk_map[cid] = result
+                chunk_map[cid] = g_result
 
         # Build ranked results
         ranked: list[RankedResult] = []
@@ -135,11 +138,12 @@ class Reranker:
 
         # Build a scoring prompt
         candidate_texts = "\n\n".join(
-            f"[{i+1}] {c.file_path}:{c.start_line}\n{c.content[:300]}"
+            f"[{i + 1}] {c.file_path}:{c.start_line}\n{c.content[:300]}"
             for i, c in enumerate(candidates[:20])  # Cap at 20 for token budget
         )
 
         from app.services.llm.base import Message  # noqa: PLC0415
+
         messages = [
             Message(
                 role="system",
@@ -157,6 +161,7 @@ class Reranker:
 
         try:
             import json  # noqa: PLC0415
+
             response = await self._llm.complete(messages, max_tokens=200)
             indices = json.loads(response.content.strip())
             reranked = []

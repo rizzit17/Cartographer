@@ -15,17 +15,20 @@ Pipeline:
 
 from __future__ import annotations
 
-import uuid
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import structlog
-from sqlalchemy import select, text
 
 from app.core.config import get_settings
-from app.db.models.chunk import CodeChunk
-from app.db.models.graph_node import GraphNode
-from app.db.repositories.chunk_repo import ChunkRepository
-from app.db.repositories.graph_repo import GraphRepository
+
+if TYPE_CHECKING:
+    import uuid
+
+    from app.db.models.chunk import CodeChunk
+    from app.db.models.graph_node import GraphNode
+    from app.db.repositories.chunk_repo import ChunkRepository
+    from app.db.repositories.graph_repo import GraphRepository
 
 logger = structlog.get_logger(__name__)
 settings = get_settings()
@@ -39,7 +42,7 @@ class GraphSearchResult:
     chunk: CodeChunk
     score: float
     retrieval_source: str = "graph"
-    path: list[str] = None  # Qualified name path from seed to this node
+    path: list[str] | None = None  # Qualified name path from seed to this node
 
     def __post_init__(self):
         if self.path is None:
@@ -121,11 +124,13 @@ class GraphRetriever:
                     )
                     for neighbor in neighbors:
                         if neighbor.id not in visited:
-                            next_frontier.append((
-                                neighbor,
-                                depth + 1,
-                                path + [neighbor.qualified_name or neighbor.name],
-                            ))
+                            next_frontier.append(
+                                (
+                                    neighbor,
+                                    depth + 1,
+                                    path + [neighbor.qualified_name or neighbor.name],
+                                )
+                            )
             frontier = next_frontier
 
         # Resolve nodes → chunks
@@ -139,15 +144,11 @@ class GraphRetriever:
         logger.debug("graph_retriever.done", results=len(results), seeds=len(seed_nodes))
         return results
 
-    async def _find_nodes_by_name(
-        self, repository_id: uuid.UUID, name: str
-    ) -> list[GraphNode]:
+    async def _find_nodes_by_name(self, repository_id: uuid.UUID, name: str) -> list[GraphNode]:
         """Find graph nodes matching a name (exact or qualified_name LIKE)."""
         nodes = await self._graph_repo.get_by_repository(repository_id)
         return [
-            n for n in nodes
-            if n.name == name
-            or (n.qualified_name and name in n.qualified_name)
+            n for n in nodes if n.name == name or (n.qualified_name and name in n.qualified_name)
         ][:5]  # Limit seeds per entity
 
     async def _resolve_node_to_chunk(

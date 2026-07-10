@@ -18,7 +18,7 @@ import asyncio
 import structlog
 
 from app.core.config import get_settings
-from app.core.exceptions import EmbeddingUnavailableError, ProviderConfigurationError
+from app.core.exceptions import ProviderConfigurationError
 from app.services.embedding.base import EmbeddingModelInfo, EmbeddingProvider
 
 logger = structlog.get_logger(__name__)
@@ -75,7 +75,7 @@ class NomicEmbeddingProvider(EmbeddingProvider):
         loop = asyncio.get_event_loop()
         vectors = await loop.run_in_executor(
             None,
-            lambda: self._model.encode(  # type: ignore[union-attr]
+            lambda: self._model.encode(  # type: ignore[union-attr,attr-defined]
                 prefixed,
                 normalize_embeddings=True,
                 show_progress_bar=False,
@@ -91,7 +91,7 @@ class NomicEmbeddingProvider(EmbeddingProvider):
         loop = asyncio.get_event_loop()
         vectors = await loop.run_in_executor(
             None,
-            lambda: self._model.encode(  # type: ignore[union-attr]
+            lambda: self._model.encode(  # type: ignore[union-attr,attr-defined]
                 [prefixed],
                 normalize_embeddings=True,
                 show_progress_bar=False,

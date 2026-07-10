@@ -12,13 +12,15 @@ Handles:
 
 from __future__ import annotations
 
-import uuid
-from typing import Any
+from typing import TYPE_CHECKING
 
 import structlog
 
-from app.db.repositories.graph_repo import GraphRepository
-from app.services.graph.ast_parser import ParsedEdge, ParsedNode
+if TYPE_CHECKING:
+    import uuid
+
+    from app.db.repositories.graph_repo import GraphRepository
+    from app.services.graph.ast_parser import ParsedEdge, ParsedNode
 
 logger = structlog.get_logger(__name__)
 

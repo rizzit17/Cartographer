@@ -46,9 +46,7 @@ class SandboxJob(Base):
 
     __tablename__ = "sandbox_jobs"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     repository_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("repositories.id", ondelete="CASCADE"),
@@ -74,10 +72,12 @@ class SandboxJob(Base):
     test_command: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Results
-    diff: Mapped[str | None] = mapped_column(Text, nullable=True)          # Unified git diff
+    diff: Mapped[str | None] = mapped_column(Text, nullable=True)  # Unified git diff
     test_passed: Mapped[bool | None] = mapped_column(nullable=True)
-    test_summary: Mapped[dict] = mapped_column(JSONB, default=dict)         # pytest JSON report
-    execution_logs: Mapped[str | None] = mapped_column(Text, nullable=True) # Combined stdout/stderr
+    test_summary: Mapped[dict] = mapped_column(JSONB, default=dict)  # pytest JSON report
+    execution_logs: Mapped[str | None] = mapped_column(
+        Text, nullable=True
+    )  # Combined stdout/stderr
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Metrics

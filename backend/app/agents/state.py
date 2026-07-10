@@ -15,9 +15,10 @@ from typing import Any, TypedDict
 
 class Task(TypedDict):
     """A decomposed subtask from the Planner Agent."""
+
     id: str
     description: str
-    agent: str          # Which agent should handle this task
+    agent: str  # Which agent should handle this task
     priority: int
     completed: bool
     result: str | None
@@ -25,17 +26,19 @@ class Task(TypedDict):
 
 class RetrievedChunk(TypedDict):
     """A single retrieved context chunk from hybrid retrieval."""
+
     chunk_id: str
     file_path: str
     content: str
     language: str
     score: float
-    retrieval_source: str   # "vector" | "keyword" | "graph"
+    retrieval_source: str  # "vector" | "keyword" | "graph"
     metadata: dict[str, Any]
 
 
 class CodeEdit(TypedDict):
     """A proposed code modification from the Code Edit Agent."""
+
     file_path: str
     original_content: str
     new_content: str
@@ -46,16 +49,18 @@ class CodeEdit(TypedDict):
 
 class BlastRadiusResult(TypedDict):
     """Output from the Blast Radius Agent."""
+
     affected_nodes: list[dict[str, Any]]
     affected_files: list[str]
-    risk_level: str         # "low" | "medium" | "high" | "critical"
-    risk_score: float       # 0.0 - 1.0
+    risk_level: str  # "low" | "medium" | "high" | "critical"
+    risk_score: float  # 0.0 - 1.0
     reasoning: str
     dependency_chain: list[str]
 
 
 class TestResult(TypedDict):
     """Output from the Test Runner Agent."""
+
     passed: bool
     total_tests: int
     passed_tests: int
@@ -69,6 +74,7 @@ class TestResult(TypedDict):
 
 class AgentMetrics(TypedDict):
     """Per-agent performance metrics."""
+
     agent_name: str
     start_time: float
     end_time: float
@@ -91,15 +97,15 @@ class AgentState(TypedDict, total=False):
     """
 
     # ── Core ───────────────────────────────────────────────────────────────
-    session_id: str                     # ChatSession UUID
-    run_id: str                         # AgentRun UUID
-    user_query: str                     # Original user question
-    repository_id: str                  # Target repository UUID
-    user_id: str                        # Authenticated user UUID
+    session_id: str  # ChatSession UUID
+    run_id: str  # AgentRun UUID
+    user_query: str  # Original user question
+    repository_id: str  # Target repository UUID
+    user_id: str  # Authenticated user UUID
 
     # ── Routing ────────────────────────────────────────────────────────────
-    next_agent: str                     # Which agent to route to next
-    status: str                         # "running" | "completed" | "failed"
+    next_agent: str  # Which agent to route to next
+    status: str  # "running" | "completed" | "failed"
 
     # ── Planner Agent output ───────────────────────────────────────────────
     task_plan: list[Task]
@@ -107,18 +113,18 @@ class AgentState(TypedDict, total=False):
 
     # ── Retriever Agent output ─────────────────────────────────────────────
     retrieved_context: list[RetrievedChunk]
-    retrieval_query: str                # Possibly rewritten query
+    retrieval_query: str  # Possibly rewritten query
 
     # ── Reasoning Agent output ─────────────────────────────────────────────
     reasoning_output: str
-    reasoning_citations: list[str]      # Chunk IDs used in answer
+    reasoning_citations: list[str]  # Chunk IDs used in answer
 
     # ── Blast Radius Agent output ──────────────────────────────────────────
     blast_radius: BlastRadiusResult
 
     # ── Code Edit Agent output ─────────────────────────────────────────────
     code_edits: list[CodeEdit]
-    diff: str                           # Unified diff
+    diff: str  # Unified diff
 
     # ── Test Runner Agent output ───────────────────────────────────────────
     test_results: TestResult
@@ -131,10 +137,10 @@ class AgentState(TypedDict, total=False):
     # ── Reflection Agent output ────────────────────────────────────────────
     reflection_notes: str
     should_retry: bool
-    retry_strategy: str                 # "replan" | "retrieve_more" | "abort"
+    retry_strategy: str  # "replan" | "retrieve_more" | "abort"
 
     # ── Memory Agent ──────────────────────────────────────────────────────
-    memory: dict[str, Any]             # Session-scoped persistent context
+    memory: dict[str, Any]  # Session-scoped persistent context
 
     # ── Error handling ─────────────────────────────────────────────────────
     errors: list[str]
@@ -145,4 +151,4 @@ class AgentState(TypedDict, total=False):
     total_tokens: int
 
     # ── Streaming ─────────────────────────────────────────────────────────
-    streaming_buffer: str              # Accumulated stream content
+    streaming_buffer: str  # Accumulated stream content

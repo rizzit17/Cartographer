@@ -7,8 +7,7 @@ Includes vector similarity search via pgvector operators.
 
 from __future__ import annotations
 
-import uuid
-from typing import Any
+from typing import TYPE_CHECKING
 
 from sqlalchemy import select, text
 from sqlalchemy.orm import selectinload
@@ -16,6 +15,9 @@ from sqlalchemy.orm import selectinload
 from app.db.models.chunk import CodeChunk
 from app.db.models.embedding import Embedding
 from app.db.repositories.base import BaseRepository
+
+if TYPE_CHECKING:
+    import uuid
 
 
 class ChunkRepository(BaseRepository[CodeChunk]):
@@ -121,23 +123,19 @@ class ChunkRepository(BaseRepository[CodeChunk]):
 
     async def delete_by_repository(self, repo_id: uuid.UUID) -> int:
         """Delete all chunks for a repository. Returns deleted count."""
-        stmt = text(
-            "DELETE FROM code_chunks WHERE repository_id = :repo_id RETURNING id"
-        )
+        stmt = text("DELETE FROM code_chunks WHERE repository_id = :repo_id RETURNING id")
         result = await self._session.execute(stmt, {"repo_id": repo_id})
         return len(result.fetchall())
 
     async def count_by_repository(self, repo_id: uuid.UUID) -> int:
         """Return total chunk count for a repository."""
         from sqlalchemy import func  # noqa: PLC0415
-        stmt = select(func.count()).select_from(CodeChunk).where(
-            CodeChunk.repository_id == repo_id
-        )
+
+        stmt = select(func.count()).select_from(CodeChunk).where(CodeChunk.repository_id == repo_id)
         result = await self._session.execute(stmt)
         return result.scalar_one()
 
     async def create_embedding(
-
         self,
         chunk_id: uuid.UUID,
         vector: list[float],

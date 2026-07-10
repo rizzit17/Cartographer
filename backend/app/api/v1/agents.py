@@ -7,12 +7,15 @@ Full agent invocation is triggered via the chat endpoint.
 
 from __future__ import annotations
 
-import uuid
+from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from app.api.deps import AgentRepo, CurrentUser
+if TYPE_CHECKING:
+    import uuid
+
+    from app.api.deps import AgentRepo, CurrentUser
 
 router = APIRouter(prefix="/agents")
 

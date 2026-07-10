@@ -10,13 +10,15 @@ their surrounding context window.
 
 from __future__ import annotations
 
-import uuid
-from typing import Any
+from typing import TYPE_CHECKING
 
 import structlog
 
-from app.db.models.chunk import CodeChunk
-from app.db.repositories.chunk_repo import ChunkRepository
+if TYPE_CHECKING:
+    import uuid
+
+    from app.db.models.chunk import CodeChunk
+    from app.db.repositories.chunk_repo import ChunkRepository
 
 logger = structlog.get_logger(__name__)
 

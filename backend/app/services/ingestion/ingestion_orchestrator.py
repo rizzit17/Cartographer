@@ -18,24 +18,27 @@ This service is driven by IngestionWorker (the background task).
 
 from __future__ import annotations
 
-import uuid
 from datetime import UTC, datetime
-from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import structlog
 
 from app.core.config import get_settings
-from app.db.repositories.chunk_repo import ChunkRepository
-from app.db.repositories.graph_repo import GraphRepository
-from app.db.repositories.repository_repo import RepositoryRepository
-from app.services.embedding.base import EmbeddingProvider
 from app.services.graph.ast_parser import ASTParser
 from app.services.graph.graph_builder import GraphBuilder
-from app.services.ingestion.chunk_service import ChunkData, ChunkService
+from app.services.ingestion.chunk_service import ChunkService
 from app.services.ingestion.clone_service import CloneService
 from app.services.ingestion.embedding_service import EmbeddingService
 from app.services.ingestion.file_scanner import FileScanner
+
+if TYPE_CHECKING:
+    import uuid
+    from pathlib import Path
+
+    from app.db.repositories.chunk_repo import ChunkRepository
+    from app.db.repositories.graph_repo import GraphRepository
+    from app.db.repositories.repository_repo import RepositoryRepository
+    from app.services.embedding.base import EmbeddingProvider
 
 logger = structlog.get_logger(__name__)
 settings = get_settings()
@@ -59,7 +62,9 @@ class IngestionOrchestrator:
         self._repo_repo = repo_repo
         self._chunk_repo = chunk_repo
         self._graph_repo = graph_repo
-        self._clone_service = CloneService(settings.sandbox_workspace_base.replace("sandbox", "repos"))
+        self._clone_service = CloneService(
+            settings.sandbox_workspace_base.replace("sandbox", "repos")
+        )
         self._file_scanner = FileScanner()
         self._chunk_service = ChunkService()
         self._embedding_service = EmbeddingService(embedding_provider, chunk_repo)

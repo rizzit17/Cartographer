@@ -38,9 +38,7 @@ class Embedding(Base):
 
     __tablename__ = "embeddings"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     chunk_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("code_chunks.id", ondelete="CASCADE"),
@@ -50,7 +48,7 @@ class Embedding(Base):
 
     # Which model produced this vector
     model: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
-    provider: Mapped[str] = mapped_column(String(50), nullable=False)   # openai | bge | nomic
+    provider: Mapped[str] = mapped_column(String(50), nullable=False)  # openai | bge | nomic
 
     # The embedding vector (3072-dim for text-embedding-3-large)
     # pgvector handles cosine / L2 / dot-product distance queries

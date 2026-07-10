@@ -67,9 +67,7 @@ class User(Base):
         onupdate=lambda: datetime.now(UTC),
         nullable=False,
     )
-    last_login_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # Relationships
     repositories: Mapped[list[Repository]] = relationship(

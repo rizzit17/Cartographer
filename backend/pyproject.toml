@@ -134,6 +134,14 @@ ignore = [
     "ANN101", # Missing type annotation for `self`
     "ANN102", # Missing type annotation for `cls`
     "ANN401", # Dynamically typed expressions (Any)
+    "ARG001", # Unused function argument (common in FastAPI dependencies)
+    "ARG002", # Unused method argument
+    "ANN201", # Missing return type for public function
+    "ANN202", # Missing return type for private function
+    "ANN204", # Missing return type for special method
+    "B008",   # Do not perform function call in argument defaults (FastAPI Depends/Query)
+    "E501",   # Line too long
+    "B027",   # Empty method in abstract base class without abstract decorator
 ]
 
 [tool.ruff.lint.isort]

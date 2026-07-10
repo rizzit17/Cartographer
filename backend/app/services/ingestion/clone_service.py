@@ -10,9 +10,12 @@ from __future__ import annotations
 import asyncio
 import shutil
 from pathlib import Path
-from typing import Callable
+from typing import TYPE_CHECKING
 
 import structlog
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 logger = structlog.get_logger(__name__)
 
@@ -58,12 +61,18 @@ class CloneService:
             import git  # noqa: PLC0415
 
             class _Progress(git.RemoteProgress):
-                def update(self, op_code: int, cur_count: object, max_count: object = None, message: str = "") -> None:
+                def update(
+                    self,
+                    op_code: int,
+                    cur_count: object,
+                    max_count: object = None,
+                    message: str = "",
+                ) -> None:
                     if on_progress and message:
                         on_progress(message)
 
             progress = _Progress() if on_progress else None
-            git.Repo.clone_from(url, str(target), branch=branch, progress=progress, depth=1)
+            git.Repo.clone_from(url, str(target), branch=branch, progress=progress, depth=1)  # type: ignore[arg-type]
             return target
 
         return await loop.run_in_executor(None, _do_clone)
@@ -75,6 +84,7 @@ class CloneService:
 
         def _do_pull() -> Path:
             import git  # noqa: PLC0415
+
             repo = git.Repo(str(target))
             origin = repo.remotes.origin
             origin.pull(branch)
@@ -93,6 +103,7 @@ class CloneService:
 
         def _get_sha() -> str:
             import git  # noqa: PLC0415
+
             repo = git.Repo(str(target))
             return repo.head.commit.hexsha
 

@@ -11,12 +11,15 @@ Provider selection is driven entirely by EMBEDDING_PROVIDER env var.
 from __future__ import annotations
 
 from functools import lru_cache
+from typing import TYPE_CHECKING
 
 import structlog
 
 from app.core.config import get_settings
 from app.core.exceptions import ProviderConfigurationError
-from app.services.embedding.base import EmbeddingProvider
+
+if TYPE_CHECKING:
+    from app.services.embedding.base import EmbeddingProvider
 
 logger = structlog.get_logger(__name__)
 
@@ -40,7 +43,9 @@ def get_embedding_provider() -> EmbeddingProvider:
     settings = get_settings()
     provider_name = settings.embedding_provider
 
-    logger.info("embedding.factory.resolving", provider=provider_name, model=settings.embedding_model)
+    logger.info(
+        "embedding.factory.resolving", provider=provider_name, model=settings.embedding_model
+    )
 
     match provider_name:
         case "openai":
@@ -48,7 +53,10 @@ def get_embedding_provider() -> EmbeddingProvider:
                 raise ProviderConfigurationError(
                     "OPENAI_API_KEY is required when EMBEDDING_PROVIDER=openai"
                 )
-            from app.services.embedding.providers.openai_provider import OpenAIEmbeddingProvider  # noqa: PLC0415
+            from app.services.embedding.providers.openai_provider import (
+                OpenAIEmbeddingProvider,  # noqa: PLC0415
+            )
+
             return OpenAIEmbeddingProvider()
 
         case "bge":
@@ -56,7 +64,10 @@ def get_embedding_provider() -> EmbeddingProvider:
                 raise ProviderConfigurationError(
                     "Set BGE_ENABLED=true to use the BGE embedding provider"
                 )
-            from app.services.embedding.providers.bge_provider import BGEEmbeddingProvider  # noqa: PLC0415
+            from app.services.embedding.providers.bge_provider import (
+                BGEEmbeddingProvider,  # noqa: PLC0415
+            )
+
             return BGEEmbeddingProvider()
 
         case "nomic":
@@ -64,11 +75,13 @@ def get_embedding_provider() -> EmbeddingProvider:
                 raise ProviderConfigurationError(
                     "Set NOMIC_ENABLED=true to use the Nomic embedding provider"
                 )
-            from app.services.embedding.providers.nomic_provider import NomicEmbeddingProvider  # noqa: PLC0415
+            from app.services.embedding.providers.nomic_provider import (
+                NomicEmbeddingProvider,  # noqa: PLC0415
+            )
+
             return NomicEmbeddingProvider()
 
         case _:
             raise ProviderConfigurationError(
-                f"Unknown embedding provider: '{provider_name}'. "
-                "Valid values: openai, bge, nomic"
+                f"Unknown embedding provider: '{provider_name}'. Valid values: openai, bge, nomic"
             )

@@ -10,21 +10,24 @@ This is the primary retrieval interface consumed by the Retriever Agent.
 
 from __future__ import annotations
 
-import uuid
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import structlog
 
 from app.core.config import get_settings
-from app.db.repositories.chunk_repo import ChunkRepository
-from app.db.repositories.graph_repo import GraphRepository
-from app.services.embedding.base import EmbeddingProvider
 from app.services.retrieval.context_compressor import ContextCompressor
 from app.services.retrieval.graph_retriever import GraphRetriever
 from app.services.retrieval.keyword_retriever import KeywordRetriever
 from app.services.retrieval.parent_child_retriever import ParentChildRetriever
 from app.services.retrieval.reranker import Reranker
 from app.services.retrieval.vector_retriever import VectorRetriever
+
+if TYPE_CHECKING:
+    import uuid
+
+    from app.db.repositories.chunk_repo import ChunkRepository
+    from app.db.repositories.graph_repo import GraphRepository
+    from app.services.embedding.base import EmbeddingProvider
 
 logger = structlog.get_logger(__name__)
 settings = get_settings()
@@ -90,15 +93,13 @@ class HybridRetriever:
         vector_task = asyncio.create_task(
             self._vector.retrieve(query, repository_id, metadata_filter=metadata_filter)
         )
-        keyword_task = asyncio.create_task(
-            self._keyword.retrieve(query, repository_id)
-        )
-        graph_task = asyncio.create_task(
-            self._graph.retrieve(entity_names or [], repository_id)
-        )
+        keyword_task = asyncio.create_task(self._keyword.retrieve(query, repository_id))
+        graph_task = asyncio.create_task(self._graph.retrieve(entity_names or [], repository_id))
 
         vector_results, keyword_results, graph_results = await asyncio.gather(
-            vector_task, keyword_task, graph_task,
+            vector_task,
+            keyword_task,
+            graph_task,
             return_exceptions=False,
         )
 
@@ -116,9 +117,8 @@ class HybridRetriever:
         reranked = await self._reranker.llm_rerank(query, fused, top_k=k * 2)
 
         # ── Step 6: Parent-child expansion ───────────────────────────────────
-        chunk_objects = [self._chunk_repo._session.get for r in reranked]  # Already have chunks
+        [self._chunk_repo._session.get for r in reranked]  # Already have chunks
         # Resolve RankedResult → CodeChunk objects
-        from app.db.models.chunk import CodeChunk  # noqa: PLC0415
         chunks = []
         for r in reranked:
             c = await self._chunk_repo.get_by_id(r.chunk_id)
@@ -133,6 +133,7 @@ class HybridRetriever:
         chunk_score_map = {r.chunk_id: r.score for r in reranked}
         for chunk in expanded:
             from app.services.retrieval.reranker import RankedResult  # noqa: PLC0415
+
             ranked_expanded.append(
                 RankedResult(
                     chunk_id=chunk.id,

@@ -6,16 +6,19 @@ CRUD endpoints for code repositories + ingestion trigger.
 
 from __future__ import annotations
 
-import uuid
 from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, status
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel
 
-from app.api.deps import CurrentUser, RepositoryRepo
-from app.core.exceptions import RepositoryAlreadyExistsError, RepositoryNotFoundError
 from app.db.models.repository import RepositoryStatus
 from app.services.ingestion.ingestion_worker import run_ingestion
+
+if TYPE_CHECKING:
+    import uuid
+
+    from app.api.deps import CurrentUser, RepositoryRepo
 
 router = APIRouter(prefix="/repositories")
 
@@ -136,7 +139,7 @@ def _to_response(r: object) -> RepositoryResponse:
         total_edges=getattr(r, "total_edges", 0),
         languages=getattr(r, "languages", {}),
         created_at=getattr(r, "created_at", datetime.now(UTC)).isoformat(),
-        ingested_at=getattr(r, "ingested_at", None).isoformat()
+        ingested_at=getattr(r, "ingested_at").isoformat()
         if getattr(r, "ingested_at", None)
         else None,
     )

@@ -11,12 +11,14 @@ Two compression modes:
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import structlog
 
 from app.core.config import get_settings
-from app.services.retrieval.reranker import RankedResult
+
+if TYPE_CHECKING:
+    from app.services.retrieval.reranker import RankedResult
 
 logger = structlog.get_logger(__name__)
 settings = get_settings()
@@ -94,6 +96,8 @@ class ContextCompressor:
             ),
         ]
 
+        if self._llm is None:
+            return content[:max_chars]
         try:
             response = await self._llm.complete(messages, max_tokens=500)
             return response.content[:max_chars]

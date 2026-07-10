@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import logging
 import sys
-from typing import Any, Literal
+from typing import Literal
 
 import structlog
 

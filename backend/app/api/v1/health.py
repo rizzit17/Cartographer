@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from pydantic import BaseModel
 
 from app.core.config import get_settings
@@ -57,6 +57,7 @@ async def readiness() -> ReadinessResponse:
     # Check PostgreSQL
     try:
         from sqlalchemy import text  # noqa: PLC0415
+
         engine = get_engine()
         async with engine.connect() as conn:
             await conn.execute(text("SELECT 1"))

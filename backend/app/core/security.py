@@ -15,8 +15,7 @@ Never import this module from the LLM / embedding / agent layers.
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
-from typing import Any, Literal
-from uuid import UUID
+from typing import TYPE_CHECKING, Any, Literal
 
 import structlog
 from jose import JWTError, jwt
@@ -24,6 +23,9 @@ from passlib.context import CryptContext
 
 from app.core.config import get_settings
 from app.core.exceptions import InvalidTokenError
+
+if TYPE_CHECKING:
+    from uuid import UUID
 
 logger = structlog.get_logger(__name__)
 settings = get_settings()
@@ -67,9 +69,7 @@ def create_access_token(
     Returns:
         Signed JWT string.
     """
-    expire = datetime.now(UTC) + timedelta(
-        minutes=settings.jwt_access_token_expire_minutes
-    )
+    expire = datetime.now(UTC) + timedelta(minutes=settings.jwt_access_token_expire_minutes)
     payload: dict[str, Any] = {
         "sub": str(user_id),
         "role": role,
@@ -135,8 +135,7 @@ def decode_token(token: str, *, expected_type: TokenType = "access") -> dict[str
 
     if payload.get("type") != expected_type:
         raise InvalidTokenError(
-            f"Expected token type '{expected_type}', "
-            f"got '{payload.get('type')}'."
+            f"Expected token type '{expected_type}', got '{payload.get('type')}'."
         )
 
     return payload

@@ -53,9 +53,7 @@ class GraphEdge(Base):
 
     __tablename__ = "graph_edges"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
     # Source and target nodes
     source_id: Mapped[uuid.UUID] = mapped_column(
@@ -96,7 +94,9 @@ class GraphEdge(Base):
         # Prevent duplicate edges of same type between same nodes
         Index(
             "uq_graph_edges_source_target_type",
-            "source_id", "target_id", "edge_type",
+            "source_id",
+            "target_id",
+            "edge_type",
             unique=True,
         ),
     )

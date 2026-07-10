@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 import structlog
 
@@ -22,8 +23,10 @@ from app.core.security import (
     hash_password,
     verify_password,
 )
-from app.db.models.user import User
-from app.db.repositories.user_repo import UserRepository
+
+if TYPE_CHECKING:
+    from app.db.models.user import User
+    from app.db.repositories.user_repo import UserRepository
 
 logger = structlog.get_logger(__name__)
 

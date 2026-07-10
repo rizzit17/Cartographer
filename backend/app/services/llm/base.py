@@ -17,9 +17,11 @@ The factory function resolves and returns the correct implementation.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import AsyncGenerator
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
 
 
 @dataclass(frozen=True)
@@ -33,8 +35,8 @@ class Message:
 
     role: str
     content: str
-    name: str | None = None         # Optional name for multi-agent scenarios
-    tool_call_id: str | None = None # For tool response messages
+    name: str | None = None  # Optional name for multi-agent scenarios
+    tool_call_id: str | None = None  # For tool response messages
 
 
 @dataclass
@@ -122,7 +124,7 @@ class LLMProvider(ABC):
         ...
 
     @abstractmethod
-    async def stream(
+    def stream(
         self,
         messages: list[Message],
         *,

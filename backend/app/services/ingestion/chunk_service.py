@@ -18,12 +18,14 @@ from __future__ import annotations
 import hashlib
 import uuid
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import structlog
 
 from app.core.config import get_settings
-from app.services.ingestion.file_scanner import FileInfo
+
+if TYPE_CHECKING:
+    from app.services.ingestion.file_scanner import FileInfo
 
 logger = structlog.get_logger(__name__)
 settings = get_settings()
@@ -42,10 +44,31 @@ _TS_LANGUAGE_MAP: dict[str, str] = {
 
 # AST node types to use as chunk boundaries per language
 _CHUNK_NODE_TYPES: dict[str, list[str]] = {
-    "python": ["function_definition", "async_function_def", "class_definition", "decorated_definition"],
-    "typescript": ["function_declaration", "method_definition", "class_declaration", "arrow_function", "export_statement"],
-    "javascript": ["function_declaration", "method_definition", "class_declaration", "arrow_function"],
-    "java": ["method_declaration", "class_declaration", "interface_declaration", "constructor_declaration"],
+    "python": [
+        "function_definition",
+        "async_function_def",
+        "class_definition",
+        "decorated_definition",
+    ],
+    "typescript": [
+        "function_declaration",
+        "method_definition",
+        "class_declaration",
+        "arrow_function",
+        "export_statement",
+    ],
+    "javascript": [
+        "function_declaration",
+        "method_definition",
+        "class_declaration",
+        "arrow_function",
+    ],
+    "java": [
+        "method_declaration",
+        "class_declaration",
+        "interface_declaration",
+        "constructor_declaration",
+    ],
     "go": ["function_declaration", "method_declaration", "type_declaration"],
     "rust": ["function_item", "impl_item", "struct_item", "enum_item", "trait_item"],
     "cpp": ["function_definition", "class_specifier", "struct_specifier"],
@@ -56,11 +79,12 @@ _CHUNK_NODE_TYPES: dict[str, list[str]] = {
 @dataclass
 class ChunkData:
     """Represents a single code chunk ready for storage."""
+
     id: uuid.UUID = field(default_factory=uuid.uuid4)
     parent_id: uuid.UUID | None = None
     file_path: str = ""
     language: str = "unknown"
-    chunk_type: str = "text"        # "function" | "class" | "method" | "text" | "module"
+    chunk_type: str = "text"  # "function" | "class" | "method" | "text" | "module"
     chunk_index: int = 0
     content: str = ""
     content_hash: str = ""
@@ -112,9 +136,7 @@ class ChunkService:
                 )
 
         # Fallback: text splitter
-        return self._assign_indices(
-            self._text_chunk(content, language, file_info.relative_path)
-        )
+        return self._assign_indices(self._text_chunk(content, language, file_info.relative_path))
 
     def _ast_chunk(self, content: str, language: str, file_path: str) -> list[ChunkData]:
         """Parse with Tree-sitter and extract top-level symbol chunks."""
@@ -146,15 +168,14 @@ class ChunkService:
         # Walk top-level children
         for node in root.children:
             if node.type in target_types:
-                node_content = content[node.start_byte:node.end_byte]
-                node_lines = node_content.count("\n") + 1
+                node_content = content[node.start_byte : node.end_byte]
+                node_content.count("\n") + 1
                 name = self._extract_name(node, content)
 
                 # If node exceeds max_size, sub-chunk it
                 if len(node_content) > self._max_size:
                     sub_chunks = self._text_chunk(
-                        node_content, language, file_path,
-                        start_offset=node.start_point[0]
+                        node_content, language, file_path, start_offset=node.start_point[0]
                     )
                     for sc in sub_chunks:
                         sc.parent_id = module_chunk.id
@@ -189,7 +210,7 @@ class ChunkService:
         chunks: list[ChunkData] = []
         text = content
         start = 0
-        lines = content.splitlines()
+        content.splitlines()
 
         while start < len(text):
             end = min(start + self._max_size, len(text))
@@ -224,6 +245,7 @@ class ChunkService:
             return self._parsers[language]
         try:
             import tree_sitter_languages  # noqa: PLC0415
+
             parser = tree_sitter_languages.get_parser(language)
             self._parsers[language] = parser
             return parser
@@ -236,7 +258,7 @@ class ChunkService:
         """Extract the identifier/name from an AST node."""
         for child in node.children:
             if child.type in ("identifier", "name", "type_identifier"):
-                return content[child.start_byte:child.end_byte]
+                return content[child.start_byte : child.end_byte]
         return None
 
     def _node_type_to_chunk_type(self, node_type: str) -> str:

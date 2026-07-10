@@ -9,15 +9,15 @@ Never calls embedding providers directly — always goes through the factory.
 
 from __future__ import annotations
 
-import asyncio
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import structlog
 
 from app.core.config import get_settings
-from app.db.repositories.chunk_repo import ChunkRepository
-from app.services.embedding.base import EmbeddingProvider
-from app.services.ingestion.chunk_service import ChunkData
+
+if TYPE_CHECKING:
+    from app.db.repositories.chunk_repo import ChunkRepository
+    from app.services.embedding.base import EmbeddingProvider
 
 logger = structlog.get_logger(__name__)
 settings = get_settings()
@@ -76,7 +76,7 @@ class EmbeddingService:
             try:
                 vectors = await self._provider.embed_texts(texts)
 
-                for chunk_id, vector in zip(chunk_ids, vectors):
+                for chunk_id, vector in zip(chunk_ids, vectors, strict=False):
                     await self._chunk_repo.create_embedding(
                         chunk_id=chunk_id,
                         vector=vector,

@@ -7,7 +7,7 @@ Provides real-time state updates for the agent trace UI.
 
 from __future__ import annotations
 
-import uuid
+from typing import TYPE_CHECKING
 
 from sqlalchemy import select
 
@@ -15,13 +15,14 @@ from app.db.models.agent_run import AgentRun
 from app.db.models.chat_session import ChatSession
 from app.db.repositories.base import BaseRepository
 
+if TYPE_CHECKING:
+    import uuid
+
 
 class AgentRepository(BaseRepository[AgentRun]):
     model = AgentRun
 
-    async def get_by_session(
-        self, session_id: uuid.UUID, *, limit: int = 20
-    ) -> list[AgentRun]:
+    async def get_by_session(self, session_id: uuid.UUID, *, limit: int = 20) -> list[AgentRun]:
         stmt = (
             select(AgentRun)
             .where(AgentRun.session_id == session_id)
@@ -34,9 +35,7 @@ class AgentRepository(BaseRepository[AgentRun]):
     async def get_chat_session(self, session_id: uuid.UUID) -> ChatSession | None:
         return await self._session.get(ChatSession, session_id)
 
-    async def get_user_sessions(
-        self, user_id: uuid.UUID, *, limit: int = 50
-    ) -> list[ChatSession]:
+    async def get_user_sessions(self, user_id: uuid.UUID, *, limit: int = 50) -> list[ChatSession]:
         stmt = (
             select(ChatSession)
             .where(ChatSession.user_id == user_id)
@@ -61,19 +60,20 @@ class AgentRepository(BaseRepository[AgentRun]):
         await self._session.flush()
         return session
 
-    async def append_message(
-        self, session_id: uuid.UUID, role: str, content: str
-    ) -> None:
+    async def append_message(self, session_id: uuid.UUID, role: str, content: str) -> None:
         """Append a message to the session's messages JSONB array."""
         from datetime import UTC, datetime  # noqa: PLC0415
+
         session = await self.get_chat_session(session_id)
         if session:
             messages = list(session.messages)
-            messages.append({
-                "role": role,
-                "content": content,
-                "timestamp": datetime.now(UTC).isoformat(),
-            })
+            messages.append(
+                {
+                    "role": role,
+                    "content": content,
+                    "timestamp": datetime.now(UTC).isoformat(),
+                }
+            )
             session.messages = messages
             await self._session.flush()
 
@@ -87,9 +87,7 @@ class AgentRepository(BaseRepository[AgentRun]):
                 run.active_agent = active_agent
             await self._session.flush()
 
-    async def append_trace_step(
-        self, run_id: uuid.UUID, step: dict
-    ) -> None:
+    async def append_trace_step(self, run_id: uuid.UUID, step: dict) -> None:
         run = await self.get_by_id(run_id)
         if run:
             trace = list(run.trace)

@@ -7,12 +7,15 @@ Full agent implementation in Phase 5.
 
 from __future__ import annotations
 
-import uuid
+from typing import TYPE_CHECKING
 
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from app.api.deps import CurrentUser
+if TYPE_CHECKING:
+    import uuid
+
+    from app.api.deps import CurrentUser
 
 router = APIRouter(prefix="/blast-radius")
 

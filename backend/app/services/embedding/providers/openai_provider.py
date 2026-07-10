@@ -10,14 +10,13 @@ Use app.services.embedding.factory.get_embedding_provider() instead.
 
 from __future__ import annotations
 
-import asyncio
 from typing import Any
 
 import structlog
 from tenacity import AsyncRetrying, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from app.core.config import get_settings
-from app.core.exceptions import EmbeddingError, EmbeddingUnavailableError
+from app.core.exceptions import EmbeddingUnavailableError
 from app.services.embedding.base import EmbeddingModelInfo, EmbeddingProvider
 
 logger = structlog.get_logger(__name__)

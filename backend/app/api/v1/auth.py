@@ -16,14 +16,13 @@ GitHub OAuth (plug-in later):
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 import structlog
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, EmailStr, Field
 
-from app.api.deps import CurrentUser, DbSession, UserRepo
 from app.core.config import get_settings
-from app.core.exceptions import ConflictError
 from app.core.security import (
     create_access_token,
     create_refresh_token,
@@ -32,12 +31,16 @@ from app.core.security import (
     verify_password,
 )
 
+if TYPE_CHECKING:
+    from app.api.deps import CurrentUser, DbSession, UserRepo
+
 logger = structlog.get_logger(__name__)
 router = APIRouter(prefix="/auth")
 settings = get_settings()
 
 
 # ── Request/Response schemas ────────────────────────────────────────────────
+
 
 class RegisterRequest(BaseModel):
     email: EmailStr
@@ -74,6 +77,7 @@ class UserResponse(BaseModel):
 
 
 # ── Endpoints ────────────────────────────────────────────────────────────────
+
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def register(body: RegisterRequest, repo: UserRepo, db: DbSession) -> UserResponse:
@@ -115,6 +119,7 @@ async def login(body: LoginRequest, repo: UserRepo) -> TokenResponse:
 async def refresh(body: RefreshRequest, repo: UserRepo) -> TokenResponse:
     """Issue a new access token using a valid refresh token."""
     import uuid  # noqa: PLC0415
+
     try:
         payload = decode_token(body.refresh_token, expected_type="refresh")
     except Exception as exc:
@@ -136,15 +141,19 @@ async def get_me(current_user: CurrentUser) -> UserResponse:
 # ── GitHub OAuth stubs (activated when GITHUB_OAUTH_ENABLED=true) ──────────
 
 if settings.github_oauth_enabled:
+
     @router.get("/github/login")
     async def github_login() -> dict:
         """Redirect to GitHub OAuth authorization page."""
         import urllib.parse  # noqa: PLC0415
-        params = urllib.parse.urlencode({
-            "client_id": settings.github_client_id,
-            "redirect_uri": settings.github_callback_url,
-            "scope": "read:user user:email",
-        })
+
+        params = urllib.parse.urlencode(
+            {
+                "client_id": settings.github_client_id,
+                "redirect_uri": settings.github_callback_url,
+                "scope": "read:user user:email",
+            }
+        )
         return {"redirect_url": f"https://github.com/login/oauth/authorize?{params}"}
 
     @router.get("/github/callback")
@@ -155,6 +164,7 @@ if settings.github_oauth_enabled:
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
+
 
 def _token_response(user_id: object, role: str) -> TokenResponse:
     return TokenResponse(

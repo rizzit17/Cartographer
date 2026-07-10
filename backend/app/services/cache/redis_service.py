@@ -10,13 +10,15 @@ Provides:
 
 from __future__ import annotations
 
-from collections.abc import AsyncGenerator
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import structlog
 from redis.asyncio import Redis, from_url
 
 from app.core.config import get_settings
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
 
 logger = structlog.get_logger(__name__)
 settings = get_settings()
@@ -98,11 +100,13 @@ class CacheService:
 
     async def get_json(self, *key_parts: str) -> Any | None:
         import json
+
         raw = await self.get(*key_parts)
         return json.loads(raw) if raw else None
 
     async def set_json(self, *key_parts: str, value: Any, ttl: int = 3600) -> None:
         import json
+
         await self.set(*key_parts, value=json.dumps(value), ttl=ttl)
 
     async def increment(self, *key_parts: str) -> int:

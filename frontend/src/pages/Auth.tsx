@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import { Map, Eye, EyeOff, Loader2 } from 'lucide-react'
 import { apiClient } from '@api/client'
+import axios from 'axios'
 import { useAuthStore } from '@store/authStore'
 import type { TokenResponse, User } from '@types/index'
 import { cn } from '@utils/cn'
@@ -41,7 +42,13 @@ export default function Auth() {
       setUser(meRes.data)
       navigate('/dashboard')
     },
-    onError: (err: any) => setError(err.response?.data?.detail ?? 'Login failed'),
+    onError: (err: unknown) => {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.detail ?? 'Login failed')
+      } else {
+        setError('Login failed')
+      }
+    },
   })
 
   const registerMutation = useMutation({
@@ -58,7 +65,13 @@ export default function Auth() {
       setTab('login')
       setError('')
     },
-    onError: (err: any) => setError(err.response?.data?.detail ?? 'Registration failed'),
+    onError: (err: unknown) => {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.detail ?? 'Registration failed')
+      } else {
+        setError('Registration failed')
+      }
+    },
   })
 
   const isLoading = loginMutation.isPending || registerMutation.isPending

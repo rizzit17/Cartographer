@@ -10,8 +10,7 @@ Use app.services.llm.factory.get_llm_provider() instead.
 
 from __future__ import annotations
 
-from collections.abc import AsyncGenerator
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import structlog
 from tenacity import (
@@ -24,6 +23,9 @@ from tenacity import (
 from app.core.config import get_settings
 from app.core.exceptions import LLMUnavailableError
 from app.services.llm.base import LLMProvider, LLMResponse, LLMUsage, Message, ModelInfo
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
 
 logger = structlog.get_logger(__name__)
 settings = get_settings()
@@ -63,9 +65,7 @@ class OpenAIProvider(LLMProvider):
                 max_retries=0,
             )
         except ImportError as exc:
-            raise ImportError(
-                "openai package not installed. Run: pip install openai"
-            ) from exc
+            raise ImportError("openai package not installed. Run: pip install openai") from exc
 
         self._model = settings.llm_model
         logger.info("llm.provider.init", provider="openai", model=self._model)

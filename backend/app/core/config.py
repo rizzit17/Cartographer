@@ -13,7 +13,7 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field, PostgresDsn, RedisDsn, SecretStr, field_validator, model_validator
+from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -29,7 +29,7 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
-        extra="ignore",             # Silently ignore unknown env vars
+        extra="ignore",  # Silently ignore unknown env vars
     )
 
     # ── Application ────────────────────────────────────────────────────────
@@ -81,9 +81,7 @@ class Settings(BaseSettings):
         if self.redis_url is None:
             pw = self.redis_password.get_secret_value() if self.redis_password else None
             auth = f":{pw}@" if pw else ""
-            self.redis_url = (
-                f"redis://{auth}{self.redis_host}:{self.redis_port}/{self.redis_db}"
-            )
+            self.redis_url = f"redis://{auth}{self.redis_host}:{self.redis_port}/{self.redis_db}"
         return self
 
     # ── JWT ────────────────────────────────────────────────────────────────
@@ -143,7 +141,7 @@ class Settings(BaseSettings):
     sandbox_timeout_seconds: int = 300
     sandbox_memory_limit: str = "2g"
     sandbox_cpu_limit: float = 2.0
-    sandbox_windows_wsl2: bool = False    # Windows + Docker Desktop / WSL2 mode
+    sandbox_windows_wsl2: bool = False  # Windows + Docker Desktop / WSL2 mode
 
     # ── Ingestion ─────────────────────────────────────────────────────────
     ingestion_chunk_size: int = 1500
@@ -151,9 +149,22 @@ class Settings(BaseSettings):
     ingestion_max_file_size_mb: int = 5
     ingestion_supported_extensions: list[str] = Field(
         default=[
-            ".py", ".ts", ".js", ".tsx", ".jsx", ".java", ".go",
-            ".rs", ".cpp", ".c", ".h", ".md", ".yaml", ".yml",
-            ".json", ".toml",
+            ".py",
+            ".ts",
+            ".js",
+            ".tsx",
+            ".jsx",
+            ".java",
+            ".go",
+            ".rs",
+            ".cpp",
+            ".c",
+            ".h",
+            ".md",
+            ".yaml",
+            ".yml",
+            ".json",
+            ".toml",
         ]
     )
 
@@ -178,9 +189,7 @@ class Settings(BaseSettings):
     log_format: Literal["json", "console"] = "json"
 
     # ── CORS ──────────────────────────────────────────────────────────────
-    cors_origins: list[str] = Field(
-        default=["http://localhost:3000", "http://localhost:5173"]
-    )
+    cors_origins: list[str] = Field(default=["http://localhost:3000", "http://localhost:5173"])
     cors_allow_credentials: bool = True
 
     @field_validator("cors_origins", mode="before")

@@ -11,7 +11,7 @@ import uuid
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String, Text
+from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -57,7 +57,7 @@ class Repository(Base):
     # Identity
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    url: Mapped[str] = mapped_column(Text, nullable=False)           # Git clone URL
+    url: Mapped[str] = mapped_column(Text, nullable=False)  # Git clone URL
     default_branch: Mapped[str] = mapped_column(String(255), default="main")
     head_commit_sha: Mapped[str | None] = mapped_column(String(40), nullable=True)
 
@@ -75,7 +75,7 @@ class Repository(Base):
     total_chunks: Mapped[int] = mapped_column(Integer, default=0)
     total_nodes: Mapped[int] = mapped_column(Integer, default=0)
     total_edges: Mapped[int] = mapped_column(Integer, default=0)
-    languages: Mapped[dict] = mapped_column(JSONB, default=dict)    # {"python": 120, "ts": 50}
+    languages: Mapped[dict] = mapped_column(JSONB, default=dict)  # {"python": 120, "ts": 50}
 
     # Local clone path (inside the container)
     local_path: Mapped[str | None] = mapped_column(Text, nullable=True)

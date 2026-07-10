@@ -13,7 +13,6 @@ Concrete agents override:
 from __future__ import annotations
 
 import time
-import uuid
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any
@@ -24,7 +23,6 @@ from tenacity import AsyncRetrying, retry_if_exception_type, stop_after_attempt,
 
 from app.agents.state import AgentMetrics, AgentState
 from app.core.config import get_settings
-from app.core.exceptions import AgentError
 from app.services.llm.base import LLMProvider, Message
 
 logger = structlog.get_logger(__name__)
@@ -130,14 +128,16 @@ class BaseAgent(ABC):
 
         # Record metrics
         metrics: list[AgentMetrics] = list(result.get("metrics", []))
-        metrics.append(AgentMetrics(
-            agent_name=self.AGENT_NAME,
-            start_time=start_time,
-            end_time=end_time,
-            duration_ms=duration_ms,
-            tokens_used=0,              # Overridden by agents that track tokens
-            retry_count=retry_count,
-        ))
+        metrics.append(
+            AgentMetrics(
+                agent_name=self.AGENT_NAME,
+                start_time=start_time,
+                end_time=end_time,
+                duration_ms=duration_ms,
+                tokens_used=0,  # Overridden by agents that track tokens
+                retry_count=retry_count,
+            )
+        )
         result["metrics"] = metrics
 
         self._log.info(

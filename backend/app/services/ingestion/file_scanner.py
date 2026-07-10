@@ -9,11 +9,14 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass, field
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import structlog
 
 from app.core.config import get_settings
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 logger = structlog.get_logger(__name__)
 settings = get_settings()
@@ -50,18 +53,36 @@ EXTENSION_LANGUAGE_MAP: dict[str, str] = {
 
 # Directories to always skip
 IGNORED_DIRS: set[str] = {
-    ".git", ".github", ".vscode", ".idea",
-    "__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache",
-    "node_modules", ".next", "dist", "build", ".yarn",
-    "venv", ".venv", "env", ".env",
-    "vendor", "third_party", ".cache",
-    "coverage", "htmlcov", ".tox",
+    ".git",
+    ".github",
+    ".vscode",
+    ".idea",
+    "__pycache__",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache",
+    "node_modules",
+    ".next",
+    "dist",
+    "build",
+    ".yarn",
+    "venv",
+    ".venv",
+    "env",
+    ".env",
+    "vendor",
+    "third_party",
+    ".cache",
+    "coverage",
+    "htmlcov",
+    ".tox",
 }
 
 
 @dataclass
 class FileInfo:
     """Metadata about a single file to be ingested."""
+
     path: Path
     relative_path: str
     language: str
@@ -73,6 +94,7 @@ class FileInfo:
 @dataclass
 class ScanResult:
     """Result of scanning a repository directory."""
+
     files: list[FileInfo]
     language_counts: dict[str, int]
     total_files: int

@@ -11,8 +11,7 @@ Use app.services.llm.factory.get_llm_provider() instead.
 from __future__ import annotations
 
 import json
-from collections.abc import AsyncGenerator
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import httpx
 import structlog
@@ -20,6 +19,9 @@ import structlog
 from app.core.config import get_settings
 from app.core.exceptions import LLMUnavailableError, ProviderConfigurationError
 from app.services.llm.base import LLMProvider, LLMResponse, LLMUsage, Message, ModelInfo
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
 
 logger = structlog.get_logger(__name__)
 settings = get_settings()

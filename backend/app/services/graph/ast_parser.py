@@ -24,9 +24,10 @@ logger = structlog.get_logger(__name__)
 @dataclass
 class ParsedNode:
     """An AST-derived graph node extracted from source code."""
-    node_type: str          # "module" | "class" | "function" | "method" | "import" | "variable"
+
+    node_type: str  # "module" | "class" | "function" | "method" | "import" | "variable"
     name: str
-    qualified_name: str     # "module.ClassName.method_name"
+    qualified_name: str  # "module.ClassName.method_name"
     file_path: str
     start_line: int
     end_line: int
@@ -36,9 +37,10 @@ class ParsedNode:
 @dataclass
 class ParsedEdge:
     """A directed relationship between two parsed nodes."""
+
     source_qualified_name: str
     target_qualified_name: str
-    edge_type: str          # "imports" | "calls" | "inherits" | "defines" | "uses"
+    edge_type: str  # "imports" | "calls" | "inherits" | "defines" | "uses"
     weight: float = 1.0
     metadata: dict[str, Any] = field(default_factory=dict)
 
@@ -127,76 +129,92 @@ class ASTParser:
             if child.type == "import_statement":
                 # import os, sys
                 for name_node in child.named_children:
-                    target = content[name_node.start_byte:name_node.end_byte].strip()
-                    edges.append(ParsedEdge(
-                        source_qualified_name=scope,
-                        target_qualified_name=target,
-                        edge_type="imports",
-                    ))
+                    target = content[name_node.start_byte : name_node.end_byte].strip()
+                    edges.append(
+                        ParsedEdge(
+                            source_qualified_name=scope,
+                            target_qualified_name=target,
+                            edge_type="imports",
+                        )
+                    )
 
             elif child.type == "import_from_statement":
                 # from os.path import join, exists
-                parts = [c for c in child.children if c.type not in ("from", "import", ",", ".", "name")]
+                parts = [
+                    c for c in child.children if c.type not in ("from", "import", ",", ".", "name")
+                ]
                 if parts:
-                    module_part = content[parts[0].start_byte:parts[0].end_byte].strip()
-                    edges.append(ParsedEdge(
-                        source_qualified_name=scope,
-                        target_qualified_name=module_part,
-                        edge_type="imports",
-                    ))
+                    module_part = content[parts[0].start_byte : parts[0].end_byte].strip()
+                    edges.append(
+                        ParsedEdge(
+                            source_qualified_name=scope,
+                            target_qualified_name=module_part,
+                            edge_type="imports",
+                        )
+                    )
 
             elif child.type in ("function_definition", "async_function_def"):
                 name_node = next((c for c in child.children if c.type == "identifier"), None)
                 if name_node:
-                    fname = content[name_node.start_byte:name_node.end_byte]
+                    fname = content[name_node.start_byte : name_node.end_byte]
                     qname = f"{scope}.{fname}"
                     node_type = "method" if "." in scope.split(".")[-1].lower() else "function"
-                    nodes.append(ParsedNode(
-                        node_type=node_type,
-                        name=fname,
-                        qualified_name=qname,
-                        file_path=file_path,
-                        start_line=child.start_point[0],
-                        end_line=child.end_point[0],
-                        metadata={"tree_sitter_type": child.type},
-                    ))
-                    edges.append(ParsedEdge(
-                        source_qualified_name=scope,
-                        target_qualified_name=qname,
-                        edge_type="defines",
-                    ))
+                    nodes.append(
+                        ParsedNode(
+                            node_type=node_type,
+                            name=fname,
+                            qualified_name=qname,
+                            file_path=file_path,
+                            start_line=child.start_point[0],
+                            end_line=child.end_point[0],
+                            metadata={"tree_sitter_type": child.type},
+                        )
+                    )
+                    edges.append(
+                        ParsedEdge(
+                            source_qualified_name=scope,
+                            target_qualified_name=qname,
+                            edge_type="defines",
+                        )
+                    )
                     # Recurse into function body
                     self._walk_python(child, content, file_path, qname, nodes, edges)
 
             elif child.type == "class_definition":
                 name_node = next((c for c in child.children if c.type == "identifier"), None)
                 if name_node:
-                    cname = content[name_node.start_byte:name_node.end_byte]
+                    cname = content[name_node.start_byte : name_node.end_byte]
                     qname = f"{scope}.{cname}"
-                    nodes.append(ParsedNode(
-                        node_type="class",
-                        name=cname,
-                        qualified_name=qname,
-                        file_path=file_path,
-                        start_line=child.start_point[0],
-                        end_line=child.end_point[0],
-                    ))
-                    edges.append(ParsedEdge(
-                        source_qualified_name=scope,
-                        target_qualified_name=qname,
-                        edge_type="defines",
-                    ))
+                    nodes.append(
+                        ParsedNode(
+                            node_type="class",
+                            name=cname,
+                            qualified_name=qname,
+                            file_path=file_path,
+                            start_line=child.start_point[0],
+                            end_line=child.end_point[0],
+                        )
+                    )
+                    edges.append(
+                        ParsedEdge(
+                            source_qualified_name=scope,
+                            target_qualified_name=qname,
+                            edge_type="defines",
+                        )
+                    )
                     # Check for inheritance
                     arg_list = next((c for c in child.children if c.type == "argument_list"), None)
                     if arg_list:
                         for base in arg_list.named_children:
-                            base_name = content[base.start_byte:base.end_byte].strip()
+                            base_name = content[base.start_byte : base.end_byte].strip()
                             if base_name not in ("object",):
-                                edges.append(ParsedEdge(
-                                    source_qualified_name=qname,
-                                    target_qualified_name=base_name,
-                                    edge_type="inherits",
-                                ))
+                                edges.append(
+                                    ParsedEdge(
+                                        source_qualified_name=qname,
+                                        target_qualified_name=base_name,
+                                        edge_type="inherits",
+                                    )
+                                )
                     self._walk_python(child, content, file_path, qname, nodes, edges)
 
     def _parse_python_stdlib(
@@ -226,49 +244,61 @@ class ASTParser:
         for node in pyast.walk(tree):
             if isinstance(node, (pyast.FunctionDef, pyast.AsyncFunctionDef)):
                 qname = f"{module_name}.{node.name}"
-                nodes.append(ParsedNode(
-                    node_type="function",
-                    name=node.name,
-                    qualified_name=qname,
-                    file_path=file_path,
-                    start_line=node.lineno,
-                    end_line=getattr(node, "end_lineno", node.lineno),
-                ))
-                edges.append(ParsedEdge(
-                    source_qualified_name=module_name,
-                    target_qualified_name=qname,
-                    edge_type="defines",
-                ))
+                nodes.append(
+                    ParsedNode(
+                        node_type="function",
+                        name=node.name,
+                        qualified_name=qname,
+                        file_path=file_path,
+                        start_line=node.lineno,
+                        end_line=getattr(node, "end_lineno", node.lineno),
+                    )
+                )
+                edges.append(
+                    ParsedEdge(
+                        source_qualified_name=module_name,
+                        target_qualified_name=qname,
+                        edge_type="defines",
+                    )
+                )
             elif isinstance(node, pyast.ClassDef):
                 qname = f"{module_name}.{node.name}"
-                nodes.append(ParsedNode(
-                    node_type="class",
-                    name=node.name,
-                    qualified_name=qname,
-                    file_path=file_path,
-                    start_line=node.lineno,
-                    end_line=getattr(node, "end_lineno", node.lineno),
-                ))
-                edges.append(ParsedEdge(
-                    source_qualified_name=module_name,
-                    target_qualified_name=qname,
-                    edge_type="defines",
-                ))
+                nodes.append(
+                    ParsedNode(
+                        node_type="class",
+                        name=node.name,
+                        qualified_name=qname,
+                        file_path=file_path,
+                        start_line=node.lineno,
+                        end_line=getattr(node, "end_lineno", node.lineno),
+                    )
+                )
+                edges.append(
+                    ParsedEdge(
+                        source_qualified_name=module_name,
+                        target_qualified_name=qname,
+                        edge_type="defines",
+                    )
+                )
             elif isinstance(node, (pyast.Import, pyast.ImportFrom)):
                 if isinstance(node, pyast.Import):
                     for alias in node.names:
-                        edges.append(ParsedEdge(
-                            source_qualified_name=module_name,
-                            target_qualified_name=alias.name,
-                            edge_type="imports",
-                        ))
+                        edges.append(
+                            ParsedEdge(
+                                source_qualified_name=module_name,
+                                target_qualified_name=alias.name,
+                                edge_type="imports",
+                            )
+                        )
                 else:
                     if node.module:
-                        edges.append(ParsedEdge(
-                            source_qualified_name=module_name,
-                            target_qualified_name=node.module,
-                            edge_type="imports",
-                        ))
+                        edges.append(
+                            ParsedEdge(
+                                source_qualified_name=module_name,
+                                target_qualified_name=node.module,
+                                edge_type="imports",
+                            )
+                        )
 
         return nodes, edges
 
@@ -305,56 +335,66 @@ class ASTParser:
         for child in root.children:
             # Import declarations
             if child.type == "import_declaration":
-                source = next(
-                    (c for c in child.children if c.type == "string"), None
-                )
+                source = next((c for c in child.children if c.type == "string"), None)
                 if source:
-                    target = content[source.start_byte:source.end_byte].strip("\"'")
-                    edges.append(ParsedEdge(
-                        source_qualified_name=module_name,
-                        target_qualified_name=target,
-                        edge_type="imports",
-                    ))
+                    target = content[source.start_byte : source.end_byte].strip("\"'")
+                    edges.append(
+                        ParsedEdge(
+                            source_qualified_name=module_name,
+                            target_qualified_name=target,
+                            edge_type="imports",
+                        )
+                    )
 
             # Class declarations
             elif child.type in ("class_declaration", "abstract_class_declaration"):
-                name_node = next((c for c in child.children if c.type in ("identifier", "type_identifier")), None)
+                name_node = next(
+                    (c for c in child.children if c.type in ("identifier", "type_identifier")), None
+                )
                 if name_node:
-                    cname = content[name_node.start_byte:name_node.end_byte]
+                    cname = content[name_node.start_byte : name_node.end_byte]
                     qname = f"{module_name}.{cname}"
-                    nodes.append(ParsedNode(
-                        node_type="class",
-                        name=cname,
-                        qualified_name=qname,
-                        file_path=file_path,
-                        start_line=child.start_point[0],
-                        end_line=child.end_point[0],
-                    ))
-                    edges.append(ParsedEdge(
-                        source_qualified_name=module_name,
-                        target_qualified_name=qname,
-                        edge_type="defines",
-                    ))
+                    nodes.append(
+                        ParsedNode(
+                            node_type="class",
+                            name=cname,
+                            qualified_name=qname,
+                            file_path=file_path,
+                            start_line=child.start_point[0],
+                            end_line=child.end_point[0],
+                        )
+                    )
+                    edges.append(
+                        ParsedEdge(
+                            source_qualified_name=module_name,
+                            target_qualified_name=qname,
+                            edge_type="defines",
+                        )
+                    )
 
             # Function declarations
             elif child.type == "function_declaration":
                 name_node = next((c for c in child.children if c.type == "identifier"), None)
                 if name_node:
-                    fname = content[name_node.start_byte:name_node.end_byte]
+                    fname = content[name_node.start_byte : name_node.end_byte]
                     qname = f"{module_name}.{fname}"
-                    nodes.append(ParsedNode(
-                        node_type="function",
-                        name=fname,
-                        qualified_name=qname,
-                        file_path=file_path,
-                        start_line=child.start_point[0],
-                        end_line=child.end_point[0],
-                    ))
-                    edges.append(ParsedEdge(
-                        source_qualified_name=module_name,
-                        target_qualified_name=qname,
-                        edge_type="defines",
-                    ))
+                    nodes.append(
+                        ParsedNode(
+                            node_type="function",
+                            name=fname,
+                            qualified_name=qname,
+                            file_path=file_path,
+                            start_line=child.start_point[0],
+                            end_line=child.end_point[0],
+                        )
+                    )
+                    edges.append(
+                        ParsedEdge(
+                            source_qualified_name=module_name,
+                            target_qualified_name=qname,
+                            edge_type="defines",
+                        )
+                    )
 
         return nodes, edges
 
@@ -362,6 +402,7 @@ class ASTParser:
         """Load Tree-sitter parser, returning None if unavailable."""
         try:
             import tree_sitter_languages  # noqa: PLC0415
+
             return tree_sitter_languages.get_parser(language)
         except Exception:
             return None

@@ -15,6 +15,7 @@ from pydantic import BaseModel, HttpUrl
 from app.api.deps import CurrentUser, RepositoryRepo
 from app.core.exceptions import RepositoryAlreadyExistsError, RepositoryNotFoundError
 from app.db.models.repository import RepositoryStatus
+from app.services.ingestion.ingestion_worker import run_ingestion
 
 router = APIRouter(prefix="/repositories")
 
@@ -74,8 +75,8 @@ async def create_repository(
         status=RepositoryStatus.PENDING,
     )
 
-    # Trigger ingestion in background (implemented in Phase 4)
-    # background_tasks.add_task(ingest_repository, str(repository.id))
+    # Trigger ingestion as a background task
+    background_tasks.add_task(run_ingestion, repository.id)
 
     return _to_response(repository)
 
@@ -118,6 +119,7 @@ async def trigger_ingestion(
     if not repository or repository.owner_id != current_user.id:
         raise HTTPException(status_code=404, detail="Repository not found.")
     await repo.update(repo_id, status=RepositoryStatus.PENDING)
+    background_tasks.add_task(run_ingestion, repo_id)
     return {"message": "Ingestion queued.", "repository_id": str(repo_id)}
 
 

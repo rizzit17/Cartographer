@@ -127,7 +127,17 @@ class ChunkRepository(BaseRepository[CodeChunk]):
         result = await self._session.execute(stmt, {"repo_id": repo_id})
         return len(result.fetchall())
 
+    async def count_by_repository(self, repo_id: uuid.UUID) -> int:
+        """Return total chunk count for a repository."""
+        from sqlalchemy import func  # noqa: PLC0415
+        stmt = select(func.count()).select_from(CodeChunk).where(
+            CodeChunk.repository_id == repo_id
+        )
+        result = await self._session.execute(stmt)
+        return result.scalar_one()
+
     async def create_embedding(
+
         self,
         chunk_id: uuid.UUID,
         vector: list[float],

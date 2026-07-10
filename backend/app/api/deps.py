@@ -35,6 +35,7 @@ from app.services.embedding.base import EmbeddingProvider
 from app.services.embedding.factory import get_embedding_provider
 from app.services.llm.base import LLMProvider
 from app.services.llm.factory import get_llm_provider
+from app.services.retrieval.hybrid_retriever import HybridRetriever
 
 logger = structlog.get_logger(__name__)
 _bearer = HTTPBearer(auto_error=False)
@@ -90,6 +91,25 @@ def get_embedder() -> EmbeddingProvider:
 
 LLM = Annotated[LLMProvider, Depends(get_llm)]
 Embedder = Annotated[EmbeddingProvider, Depends(get_embedder)]
+
+# ---------------------------------------------------------------------------
+# Retrieval Services
+# ---------------------------------------------------------------------------
+
+def get_hybrid_retriever(
+    chunk_repo: ChunkRepo,
+    graph_repo: GraphRepo,
+    embedder: Embedder,
+    llm: LLM,
+) -> HybridRetriever:
+    return HybridRetriever(
+        chunk_repo=chunk_repo,
+        graph_repo=graph_repo,
+        embedding_provider=embedder,
+        llm_provider=llm,
+    )
+
+Retriever = Annotated[HybridRetriever, Depends(get_hybrid_retriever)]
 
 # ---------------------------------------------------------------------------
 # Authentication

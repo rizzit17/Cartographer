@@ -121,8 +121,8 @@ Dashboard · Repository Management · Repository Graph · Repository Explorer ·
 
 Work through these phases one at a time. After each phase: review, refactor if needed, confirm architectural consistency before moving on.
 
-- [ ] **Phase 1** — Complete software architecture (folder structure, module boundaries, data flow diagrams)
-- [ ] **Phase 2** — Backend (FastAPI app, DB models, migrations, core services)
+- [x] **Phase 1** — Complete software architecture (folder structure, module boundaries, data flow diagrams)
+- [x] **Phase 2** — Backend (FastAPI app, DB models, migrations, core services)
 - [ ] **Phase 3** — Frontend (React app shell, pages, state management)
 - [ ] **Phase 4** — Graph RAG (parsing, graph construction, hybrid retrieval)
 - [ ] **Phase 5** — Agents (LangGraph orchestration, all 10 agents)
@@ -140,6 +140,7 @@ _Update this section each session so future AI sessions know exactly where thing
 | Date | Phase | What was done | Open questions / next step |
 |------|-------|----------------|------------------------------|
 | 2026-07-10 | Phase 1 | Complete architecture scaffolding: `.env.example`, `docker-compose.yml`, backend `pyproject.toml`, `Dockerfile`, `alembic.ini`, all 9 SQLAlchemy ORM models (User, Repository, CodeChunk, Embedding, GraphNode, GraphEdge, AgentRun, ChatSession, SandboxJob), all 5 DB repositories (BaseRepository + UserRepo, RepositoryRepo, ChunkRepo, GraphRepo, AgentRepo), `LLMProvider` ABC + 3 providers (Anthropic, OpenAI, Ollama), `EmbeddingProvider` ABC + 3 providers (OpenAI, BGE, Nomic), both factories, Redis service, 8 FastAPI routers (health, auth, repositories, chat, agents, graph, sandbox, blast_radius), FastAPI `deps.py`, Alembic `env.py`, `AgentState` TypedDict, `BaseAgent`, 10 YAML prompt files, frontend `package.json`/`vite.config.ts`/`tailwind.config.ts`/`index.html`, global CSS design system, `main.tsx`/`App.tsx`, Zustand auth store, axios+SSE API client, TypeScript types, 11 page stubs, Layout + Sidebar, pre-commit hooks, GitHub Actions CI, sandbox Dockerfile, Nginx config, Prometheus config, PostgreSQL init SQL. | Proceed to Phase 2 — full backend service implementations (ingestion, Graph RAG retrieval, complete service layer). |
+| 2026-07-10 | Phase 2 | Full backend service implementations: AST parsing (`ast_parser.py`), graph construction (`graph_builder.py`), repository clone service (`clone_service.py`), file scanning (`file_scanner.py`), AST-aware chunking (`chunk_service.py`), embeddings (`embedding_service.py`), ingestion worker (`ingestion_orchestrator.py`), auth service (`auth_service.py`), hybrid retrieval pipeline (`vector_retriever.py`, `keyword_retriever.py`, `graph_retriever.py`, `hybrid_retriever.py`, `reranker.py`, `context_compressor.py`, `parent_child_retriever.py`), `alembic` initial migration. | Proceed to Phase 3 — Frontend implementation (React app shell, pages, state management). |
 
 ---
 

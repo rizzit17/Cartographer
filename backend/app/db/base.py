@@ -149,3 +149,18 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
         except Exception:
             await session.rollback()
             raise
+
+
+def async_session_factory():
+    """
+    Return the session factory as a context manager.
+
+    Used by background tasks (e.g. ingestion_worker) that need to manage
+    their own session lifecycle outside of the FastAPI request context.
+
+    Usage:
+        async with async_session_factory() as session:
+            async with session.begin():
+                ...
+    """
+    return get_session_factory()()

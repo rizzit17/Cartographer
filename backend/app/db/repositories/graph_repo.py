@@ -127,6 +127,15 @@ class GraphRepository(BaseRepository[GraphNode]):
         await self._session.flush()
         return edge
 
+    async def count_by_repository(self, repo_id: uuid.UUID) -> int:
+        """Return total node count for a repository."""
+        from sqlalchemy import func  # noqa: PLC0415
+        stmt = select(func.count()).select_from(GraphNode).where(
+            GraphNode.repository_id == repo_id
+        )
+        result = await self._session.execute(stmt)
+        return result.scalar_one()
+
     async def delete_by_repository(self, repo_id: uuid.UUID) -> None:
         """Delete all graph data for a repository."""
         await self._session.execute(

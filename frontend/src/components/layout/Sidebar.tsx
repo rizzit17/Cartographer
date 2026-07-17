@@ -18,7 +18,7 @@ import {
   MessageSquare,
   Activity,
   Zap,
-  GitDiff,
+  FileDiff,
   FlaskConical,
   Settings,
   LogOut,
@@ -28,14 +28,17 @@ import { useAuthStore } from '@store/authStore'
 import { cn } from '@utils/cn'
 
 const navItems = [
-  { to: '/dashboard',    label: 'Dashboard',   icon: LayoutDashboard },
-  { to: '/repositories', label: 'Repositories', icon: GitBranch },
-  { to: '/chat',         label: 'Chat',         icon: MessageSquare },
-  { to: '/agents',       label: 'Agent Trace',  icon: Activity },
-  { to: '/blast-radius', label: 'Blast Radius', icon: Zap },
-  { to: '/diff',         label: 'Diff Viewer',  icon: GitDiff },
-  { to: '/tests',        label: 'Test Results', icon: FlaskConical },
-  { to: '/settings',     label: 'Settings',     icon: Settings },
+  { to: '/dashboard',     label: 'Dashboard',           icon: LayoutDashboard },
+  { to: '/repositories',  label: 'Repositories',        icon: GitBranch },
+  { to: '/explorer',      label: 'Repository Explorer', icon: FolderOpen },
+  { to: '/graph',         label: 'Code Graph',          icon: Share2 },
+  { to: '/chat',          label: 'Chat',                icon: MessageSquare },
+  { to: '/runs',          label: 'Refactor Runs',       icon: Activity },
+  { to: '/blast-radius',  label: 'Blast Radius',        icon: Zap },
+  { to: '/agents',        label: 'Agent Trace',         icon: Activity },
+  { to: '/diff',          label: 'Diff Viewer',         icon: FileDiff },
+  { to: '/tests',         label: 'Test Results',        icon: FlaskConical },
+  { to: '/settings',      label: 'Settings',            icon: Settings },
 ]
 
 export function Sidebar() {

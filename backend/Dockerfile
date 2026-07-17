@@ -31,7 +31,7 @@ RUN pip install uv
 # ---------------------------------------------------------------------------
 FROM base AS deps
 
-COPY pyproject.toml .
+COPY pyproject.toml README.md ./
 
 # Install production dependencies
 RUN uv pip install --system --no-cache -e "."

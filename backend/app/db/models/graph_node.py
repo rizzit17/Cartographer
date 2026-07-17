@@ -74,7 +74,7 @@ class GraphNode(Base):
     # Rich metadata stored as JSONB for schema-free evolution
     # e.g. {"signature": "def foo(x: int) -> str", "docstring": "...",
     #        "decorators": ["@staticmethod"], "is_async": true}
-    metadata: Mapped[dict] = mapped_column(JSONB, default=dict, nullable=False)
+    node_metadata: Mapped[dict] = mapped_column("metadata", JSONB, default=dict, nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False

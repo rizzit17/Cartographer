@@ -26,6 +26,7 @@ dependencies = [
 
     # Cache
     "redis[hiredis]>=5.2.0",
+    "celery>=5.4.0",
 
     # Auth
     "python-jose[cryptography]>=3.3.0",
@@ -159,6 +160,15 @@ python_version = "3.12"
 strict = true
 plugins = ["pydantic.mypy", "sqlalchemy.ext.mypy.plugin"]
 ignore_missing_imports = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
+torchvision = { index = "pytorch-cpu" }
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
 
 [tool.pydantic-mypy]
 init_forbid_extra = true

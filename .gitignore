@@ -58,3 +58,9 @@ coverage.xml
 
 # Ruff
 .ruff_cache/
+
+# Logs and benchmarks
+*.log
+traceback.txt
+fix_*.py
+backend/benchmarks/results/

@@ -18,6 +18,7 @@ const Repositories  = lazy(() => import('@pages/Repositories'))
 const RepositoryGraph = lazy(() => import('@pages/RepositoryGraph'))
 const RepositoryExplorer = lazy(() => import('@pages/RepositoryExplorer'))
 const Chat          = lazy(() => import('@pages/Chat'))
+const RefactorRuns  = lazy(() => import('@pages/RefactorRuns'))
 const AgentTrace    = lazy(() => import('@pages/AgentTrace'))
 const BlastRadius   = lazy(() => import('@pages/BlastRadius'))
 const DiffViewer    = lazy(() => import('@pages/DiffViewer'))
@@ -61,14 +62,15 @@ export default function App() {
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="repositories" element={<Repositories />} />
-            <Route path="repositories/:repoId/graph" element={<RepositoryGraph />} />
-            <Route path="repositories/:repoId/explorer" element={<RepositoryExplorer />} />
+            <Route path="graph" element={<RepositoryGraph />} />
+            <Route path="explorer" element={<RepositoryExplorer />} />
             <Route path="chat" element={<Chat />} />
             <Route path="chat/:sessionId" element={<Chat />} />
-            <Route path="agents/:runId" element={<AgentTrace />} />
+            <Route path="runs" element={<RefactorRuns />} />
+            <Route path="agents" element={<AgentTrace />} />
             <Route path="blast-radius" element={<BlastRadius />} />
-            <Route path="diff/:jobId" element={<DiffViewer />} />
-            <Route path="tests/:jobId" element={<TestResults />} />
+            <Route path="diff" element={<DiffViewer />} />
+            <Route path="tests" element={<TestResults />} />
             <Route path="settings" element={<Settings />} />
           </Route>
 

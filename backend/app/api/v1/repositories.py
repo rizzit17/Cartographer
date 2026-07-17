@@ -15,10 +15,10 @@ from pydantic import BaseModel
 from app.db.models.repository import RepositoryStatus
 from app.services.ingestion.ingestion_worker import run_ingestion
 
+from app.api.deps import CurrentUser, RepositoryRepo
+
 if TYPE_CHECKING:
     import uuid
-
-    from app.api.deps import CurrentUser, RepositoryRepo
 
 router = APIRouter(prefix="/repositories")
 

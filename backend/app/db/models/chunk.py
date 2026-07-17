@@ -61,7 +61,18 @@ class CodeChunk(Base):
 
     # Structural metadata (populated by AST parser)
     # e.g. {"function": "my_func", "class": "MyClass", "module": "utils"}
-    metadata: Mapped[dict] = mapped_column(JSONB, default=dict, nullable=False)
+    chunk_metadata: Mapped[dict] = mapped_column("metadata", JSONB, default=dict, nullable=False)
+
+    @property
+    def symbol_name(self) -> str | None:
+        """Helper to extract the most specific symbol name from metadata."""
+        if not self.chunk_metadata:
+            return None
+        return (
+            self.chunk_metadata.get("function")
+            or self.chunk_metadata.get("class")
+            or self.chunk_metadata.get("module")
+        )
 
     # Parent-child for hierarchical retrieval
     # parent_id points to a larger enclosing chunk (e.g. whole function)

@@ -12,7 +12,7 @@ import { Map, Eye, EyeOff, Loader2 } from 'lucide-react'
 import { apiClient } from '@api/client'
 import axios from 'axios'
 import { useAuthStore } from '@store/authStore'
-import type { TokenResponse, User } from '@types/index'
+import type { TokenResponse, User } from '../types'
 import { cn } from '@utils/cn'
 
 type Tab = 'login' | 'register'

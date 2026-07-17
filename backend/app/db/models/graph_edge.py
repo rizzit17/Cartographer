@@ -73,7 +73,7 @@ class GraphEdge(Base):
     weight: Mapped[float] = mapped_column(Float, default=1.0, nullable=False)
 
     # Optional: extra edge attributes (e.g. import alias, call argument count)
-    metadata: Mapped[dict] = mapped_column(JSONB, default=dict, nullable=False)
+    edge_metadata: Mapped[dict] = mapped_column("metadata", JSONB, default=dict, nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False

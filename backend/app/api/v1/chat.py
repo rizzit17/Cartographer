@@ -20,11 +20,12 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-if TYPE_CHECKING:
-    import uuid
-    from collections.abc import AsyncGenerator
+import uuid
 
-    from app.api.deps import LLM, AgentRepo, CurrentUser
+from app.api.deps import LLM, AgentRepo, CurrentUser
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
 
 logger = structlog.get_logger(__name__)
 router = APIRouter(prefix="/chat")
@@ -123,15 +124,60 @@ async def send_message(
         """Generate SSE events from the agent pipeline."""
         full_response = ""
         try:
-            # Phase 5 will wire this to the full LangGraph pipeline.
-            # For now: direct LLM streaming as scaffolding.
-            from app.services.llm.base import Message  # noqa: PLC0415
+            # Phase 5 & 6 Integration: Use LangGraph Orchestrator
+            from app.services.agents.orchestrator import AgentOrchestrator
+            from app.services.agents.state import AgentState
 
+            orchestrator = AgentOrchestrator(llm_provider=llm)
+            
+            initial_state: AgentState = {
+                "session_id": session_id,
+                "repository_id": session.repository_id,
+                "user_query": body.content,
+                "conversation_history": session.messages,
+                "retrieval_context": [],
+                "graph_context": [],
+                "selected_files": [],
+                "selected_symbols": [],
+                "planner_output": None,
+                "blast_radius": None,
+                "proposed_diff": None,
+                "edit_operations": [],
+                "sandbox_status": None,
+                "test_results": None,
+                "critic_feedback": None,
+                "reflection_feedback": None,
+                "execution_logs": [],
+                "current_agent": "SupervisorAgent",
+                "next_agent": None,
+                "retry_count": 0,
+                "confidence_score": 1.0,
+                "latency_metrics": {},
+                "token_usage": {},
+                "memory_summary": "",
+                "citations": [],
+                "stream_events": [],
+                "errors": []
+            }
+
+            async for state_update in orchestrator.stream_run(initial_state):
+                # Send the latest stream events to the frontend
+                events = state_update.get("stream_events", [])
+                if events:
+                    # Just send the last event for now
+                    latest_event = events[-1]
+                    trace_event = json.dumps({"type": "agent_trace", "content": latest_event["message"]})
+                    yield f"data: {trace_event}\n\n"
+                    
+            # For this scaffolding, we generate a final LLM response summarization
+            # based on the final state.
+            from app.services.llm.base import Message
+            summary_prompt = f"Summarize the agent run for query: {body.content}"
             messages = [
-                Message(role="system", content="You are Cartographer, an AI code assistant."),
-                Message(role="user", content=body.content),
+                Message(role="system", content="You are Cartographer. Summarize what was just done."),
+                Message(role="user", content=summary_prompt)
             ]
-
+            
             async for token in llm.stream(messages):
                 full_response += token
                 event = json.dumps({"type": "token", "content": token})

@@ -10,7 +10,7 @@ env:
   PYTHON_VERSION: "3.12"
   NODE_VERSION: "20"
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: rizzit17/cartographer
 
 jobs:
   # ---------------------------------------------------------------------------

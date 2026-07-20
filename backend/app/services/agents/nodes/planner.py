@@ -39,7 +39,8 @@ Return a JSON object matching this schema exactly:
 
         # Mocking LLM invocation
         import asyncio
-        await asyncio.sleep(1) # simulate latency
+
+        await asyncio.sleep(1)  # simulate latency
 
         # Simulated LLM output
         mock_output = PlannerOutput(
@@ -50,7 +51,7 @@ Return a JSON object matching this schema exactly:
                     description="Find all references to the targeted code",
                     expected_output="List of affected files",
                     required_context=["dependencies"],
-                    risk_level="LOW"
+                    risk_level="LOW",
                 ),
                 TaskDependency(
                     task_id="generate_edits",
@@ -58,11 +59,11 @@ Return a JSON object matching this schema exactly:
                     description="Generate refactoring edits",
                     expected_output="Proposed code changes",
                     required_context=["target files"],
-                    risk_level="MEDIUM"
-                )
+                    risk_level="MEDIUM",
+                ),
             ],
             overall_risk="MEDIUM",
-            reasoning="Standard refactoring flow requires analyzing impact before editing."
+            reasoning="Standard refactoring flow requires analyzing impact before editing.",
         )
 
         state["planner_output"] = mock_output

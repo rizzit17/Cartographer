@@ -17,6 +17,7 @@ Analyze the target code and its dependents. Compute affected files, risk level, 
         self._emit_event(state, "Calculating blast radius across dependency graph...")
 
         import asyncio
+
         await asyncio.sleep(1.5)
 
         state["blast_radius"] = BlastRadiusImpact(
@@ -25,10 +26,12 @@ Analyze the target code and its dependents. Compute affected files, risk level, 
             dependency_depth=3,
             confidence=0.92,
             estimated_risk="HIGH",
-            visualization_payload={"nodes": [], "edges": []}
+            visualization_payload={"nodes": [], "edges": []},
         )
 
-        state["next_agent"] = "CodeEditAgent" # Usually goes to edit after blast radius if refactoring
+        state["next_agent"] = (
+            "CodeEditAgent"  # Usually goes to edit after blast radius if refactoring
+        )
 
         self._track_latency(state, "blast_radius", start_time)
         self._emit_event(state, "Blast radius evaluated: HIGH risk.", level="warning")

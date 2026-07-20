@@ -36,21 +36,23 @@ async def db_engine():
         await conn.run_sync(Base.metadata.drop_all)
     await engine.dispose()
 
+
 @pytest_asyncio.fixture
 async def db_session(db_engine) -> AsyncGenerator[AsyncSession, None]:
-    async_session = async_sessionmaker(
-        db_engine, expire_on_commit=False, autoflush=False
-    )
+    async_session = async_sessionmaker(db_engine, expire_on_commit=False, autoflush=False)
     async with async_session() as session:
         yield session
+
 
 @pytest.fixture
 def override_get_db(db_session):
     async def _get_db():
         yield db_session
+
     app.dependency_overrides[get_session] = _get_db
     yield
     app.dependency_overrides.clear()
+
 
 @pytest.fixture
 def test_user():
@@ -59,18 +61,21 @@ def test_user():
         "email": "test@example.com",
         "username": "tester",
         "is_active": True,
-        "is_superuser": False
+        "is_superuser": False,
     }
+
 
 @pytest.fixture
 def auth_headers(test_user):
     token = create_access_token(str(test_user["id"]))
     return {"Authorization": f"Bearer {token}"}
 
+
 @pytest_asyncio.fixture
 async def async_client(override_get_db) -> AsyncGenerator[AsyncClient, None]:
     async with AsyncClient(app=app, base_url="http://testserver") as client:
         yield client
+
 
 class MockLLMProvider:
     async def invoke(self, messages, **kwargs):
@@ -83,9 +88,11 @@ class MockLLMProvider:
     async def generate_structured(self, messages, schema, **kwargs):
         return schema(**{})
 
+
 @pytest.fixture
 def mock_llm():
     return MockLLMProvider()
+
 
 class MockEmbeddingProvider:
     async def embed_query(self, text: str) -> list[float]:
@@ -99,20 +106,35 @@ class MockEmbeddingProvider:
         class ModelInfo:
             name = "text-embedding-3-small"
             dimension = 1536
+
         return ModelInfo()
+
 
 @pytest.fixture
 def mock_embedding():
     return MockEmbeddingProvider()
 
+
 class MockSandbox:
-    async def initialize(self, *args, **kwargs): return True
+    async def initialize(self, *args, **kwargs):
+        return True
+
     async def execute(self, cmd, **kwargs):
         from app.services.agents.state import SandboxResult
-        return SandboxResult(status="PASS", stdout="Success", stderr="", exit_code=0, execution_time_sec=0.1)
-    async def apply_edits(self, edits): return True
-    async def get_diff(self): return "+ added line"
-    async def cleanup(self): pass
+
+        return SandboxResult(
+            status="PASS", stdout="Success", stderr="", exit_code=0, execution_time_sec=0.1
+        )
+
+    async def apply_edits(self, edits):
+        return True
+
+    async def get_diff(self):
+        return "+ added line"
+
+    async def cleanup(self):
+        pass
+
 
 @pytest.fixture
 def mock_sandbox():

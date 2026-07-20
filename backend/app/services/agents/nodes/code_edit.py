@@ -17,6 +17,7 @@ Output JSON with a list of SEARCH/REPLACE operations that cleanly apply the refa
         self._emit_event(state, "Generating structured search/replace edits...")
 
         import asyncio
+
         await asyncio.sleep(1)
 
         # MOCK
@@ -25,7 +26,7 @@ Output JSON with a list of SEARCH/REPLACE operations that cleanly apply the refa
                 operation_type="SEARCH_REPLACE",
                 file_path="backend/app/main.py",
                 search_block="app = FastAPI()",
-                replace_block="app = FastAPI(title='Cartographer')"
+                replace_block="app = FastAPI(title='Cartographer')",
             )
         ]
 

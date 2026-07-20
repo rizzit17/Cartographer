@@ -10,8 +10,9 @@ def empty_state():
         "retrieval_context": [],
         "stream_events": [],
         "latency_metrics": {},
-        "token_usage": {}
+        "token_usage": {},
     }
+
 
 @pytest.mark.asyncio
 async def test_retriever_agent_basic(empty_state, mock_llm):

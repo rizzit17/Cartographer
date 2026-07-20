@@ -30,20 +30,21 @@ if TYPE_CHECKING:
 logger = structlog.get_logger(__name__)
 settings = get_settings()
 
+
 # ---------------------------------------------------------------------------
 # Password hashing
 # ---------------------------------------------------------------------------
 def hash_password(plain: str) -> str:
     """Return a bcrypt hash of the plaintext password."""
     salt = bcrypt.gensalt()
-    hashed = bcrypt.hashpw(plain.encode('utf-8'), salt)
-    return hashed.decode('ascii')
+    hashed = bcrypt.hashpw(plain.encode("utf-8"), salt)
+    return hashed.decode("ascii")
 
 
 def verify_password(plain: str, hashed: str) -> bool:
     """Return True if plain matches hashed."""
     try:
-        return bcrypt.checkpw(plain.encode('utf-8'), hashed.encode('ascii'))
+        return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("ascii"))
     except ValueError:
         return False
 

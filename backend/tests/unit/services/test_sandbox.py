@@ -1,10 +1,10 @@
-
 import pytest
 
 from app.core.config import get_settings
 from app.services.sandbox.docker_sandbox import DockerSandboxService
 
 settings = get_settings()
+
 
 @pytest.mark.asyncio
 async def test_sandbox_execution(mocker):
@@ -37,6 +37,7 @@ async def test_sandbox_execution(mocker):
     # Test cleanup
     await sandbox.cleanup()
     mock_container.stop.assert_called_once()
+
 
 @pytest.mark.asyncio
 async def test_sandbox_timeout(mocker):

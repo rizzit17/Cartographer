@@ -18,10 +18,12 @@ from app.services.sandbox.docker_sandbox import DockerSandboxService
 
 logger = structlog.get_logger(__name__)
 
+
 class AgentOrchestrator:
     """
     Builds and executes the LangGraph StateGraph connecting all Cartographer agents.
     """
+
     def __init__(self, llm_provider=None):
         self.sandbox = DockerSandboxService()
 
@@ -56,10 +58,7 @@ class AgentOrchestrator:
         workflow.add_conditional_edges(
             "SupervisorAgent",
             lambda state: state.get("next_agent"),
-            {
-                "PlannerAgent": "PlannerAgent",
-                "RetrieverAgent": "RetrieverAgent"
-            }
+            {"PlannerAgent": "PlannerAgent", "RetrieverAgent": "RetrieverAgent"},
         )
 
         # Planner always goes to Retriever (for refactoring)
@@ -69,10 +68,7 @@ class AgentOrchestrator:
         workflow.add_conditional_edges(
             "RetrieverAgent",
             lambda state: state.get("next_agent"),
-            {
-                "ReasoningAgent": "ReasoningAgent",
-                "BlastRadiusAgent": "BlastRadiusAgent"
-            }
+            {"ReasoningAgent": "ReasoningAgent", "BlastRadiusAgent": "BlastRadiusAgent"},
         )
 
         # Reasoning goes to Memory -> END
@@ -91,20 +87,14 @@ class AgentOrchestrator:
         workflow.add_conditional_edges(
             "CriticAgent",
             lambda state: state.get("next_agent"),
-            {
-                "MemoryAgent": "MemoryAgent",
-                "ReflectionAgent": "ReflectionAgent"
-            }
+            {"MemoryAgent": "MemoryAgent", "ReflectionAgent": "ReflectionAgent"},
         )
 
         # Conditional edge from Reflection (Retry -> Code Edit, Abort -> END)
         workflow.add_conditional_edges(
             "ReflectionAgent",
             lambda state: state.get("next_agent") or END,
-            {
-                "CodeEditAgent": "CodeEditAgent",
-                END: END
-            }
+            {"CodeEditAgent": "CodeEditAgent", END: END},
         )
 
         workflow.add_edge("MemoryAgent", END)

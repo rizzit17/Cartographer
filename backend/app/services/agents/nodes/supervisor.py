@@ -20,6 +20,7 @@ Classify the user intent:
         self._emit_event(state, "Classifying intent and routing...")
 
         import asyncio
+
         await asyncio.sleep(0.5)
 
         query = state.get("user_query", "").lower()

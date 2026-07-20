@@ -156,7 +156,7 @@ async def send_message(
                 "memory_summary": "",
                 "citations": [],
                 "stream_events": [],
-                "errors": []
+                "errors": [],
             }
 
             async for state_update in orchestrator.stream_run(initial_state):
@@ -165,16 +165,21 @@ async def send_message(
                 if events:
                     # Just send the last event for now
                     latest_event = events[-1]
-                    trace_event = json.dumps({"type": "agent_trace", "content": latest_event["message"]})
+                    trace_event = json.dumps(
+                        {"type": "agent_trace", "content": latest_event["message"]}
+                    )
                     yield f"data: {trace_event}\n\n"
 
             # For this scaffolding, we generate a final LLM response summarization
             # based on the final state.
             from app.services.llm.base import Message
+
             summary_prompt = f"Summarize the agent run for query: {body.content}"
             messages = [
-                Message(role="system", content="You are Cartographer. Summarize what was just done."),
-                Message(role="user", content=summary_prompt)
+                Message(
+                    role="system", content="You are Cartographer. Summarize what was just done."
+                ),
+                Message(role="user", content=summary_prompt),
             ]
 
             async for token in llm.stream(messages):
@@ -209,7 +214,9 @@ def _session_response(s: object) -> SessionResponse:
     return SessionResponse(
         id=str(getattr(s, "id", "")),
         title=getattr(s, "title", ""),
-        repository_id=str(getattr(s, "repository_id", "")) if getattr(s, "repository_id", None) else None,
+        repository_id=str(getattr(s, "repository_id", ""))
+        if getattr(s, "repository_id", None)
+        else None,
         message_count=len(messages),
         created_at=getattr(s, "created_at", datetime.now(UTC)).isoformat(),
         updated_at=getattr(s, "updated_at", datetime.now(UTC)).isoformat(),

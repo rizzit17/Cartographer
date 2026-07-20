@@ -135,7 +135,5 @@ def _to_response(r: object) -> RepositoryResponse:
         total_edges=getattr(r, "total_edges", 0),
         languages=getattr(r, "languages", {}),
         created_at=getattr(r, "created_at", datetime.now(UTC)).isoformat(),
-        ingested_at=r.ingested_at.isoformat()
-        if getattr(r, "ingested_at", None)
-        else None,
+        ingested_at=r.ingested_at.isoformat() if getattr(r, "ingested_at", None) else None,
     )

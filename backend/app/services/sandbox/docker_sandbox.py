@@ -10,11 +10,13 @@ from app.services.agents.state import EditOperation, SandboxResult
 
 logger = structlog.get_logger(__name__)
 
+
 class DockerSandboxService:
     """
     Isolated Docker sandbox for Cartographer to execute arbitrary code.
     Runs tests and commands in a highly restricted container (no network, readonly rootfs, mem limits).
     """
+
     def __init__(self, image: str = "python:3.12-slim"):
         self.image = image
         try:
@@ -49,9 +51,7 @@ class DockerSandboxService:
 
             # Map temp dir to /workspace to allow writes (since rootfs is readonly)
             host_path = os.path.abspath(self._temp_dir.name)
-            volumes = {
-                host_path: {'bind': self.workdir, 'mode': 'rw'}
-            }
+            volumes = {host_path: {"bind": self.workdir, "mode": "rw"}}
 
             # Since the user requested read-only filesystem but we need to run tests
             # we will mount the workspace as rw and make the rest readonly.
@@ -66,11 +66,11 @@ class DockerSandboxService:
                 volumes=volumes,
                 working_dir=self.workdir,
                 mem_limit="2g",
-                nano_cpus=2_000_000_000, # 2 CPUs
+                nano_cpus=2_000_000_000,  # 2 CPUs
                 cap_drop=["ALL"],
                 security_opt=["no-new-privileges:true"],
-                user="1000:1000", # Run as non-root
-                remove=True
+                user="1000:1000",  # Run as non-root
+                remove=True,
             )
             logger.info("Sandbox container started", container_id=self.container.short_id)
 
@@ -78,6 +78,7 @@ class DockerSandboxService:
             # For this demo, we assume the host path is accessible.
             if repository_path and os.path.exists(repository_path):
                 import shutil
+
                 # Copy everything from repository to temp workspace
                 for item in os.listdir(repository_path):
                     s = os.path.join(repository_path, item)
@@ -97,8 +98,11 @@ class DockerSandboxService:
         """Run a command inside the container and return the result."""
         if not self.container:
             return SandboxResult(
-                status="ERROR", stdout="", stderr="Container not running",
-                exit_code=-1, execution_time_sec=0.0
+                status="ERROR",
+                stdout="",
+                stderr="Container not running",
+                exit_code=-1,
+                execution_time_sec=0.0,
             )
 
         start_time = time.time()
@@ -108,15 +112,15 @@ class DockerSandboxService:
                 cmd=["/bin/sh", "-c", command],
                 workdir=self.workdir,
                 user="1000:1000",
-                demux=True # separates stdout and stderr
+                demux=True,  # separates stdout and stderr
             )
 
             execution_time = time.time() - start_time
             exit_code = exec_log.exit_code
             stdout_bytes, stderr_bytes = exec_log.output
 
-            stdout = stdout_bytes.decode('utf-8') if stdout_bytes else ""
-            stderr = stderr_bytes.decode('utf-8') if stderr_bytes else ""
+            stdout = stdout_bytes.decode("utf-8") if stdout_bytes else ""
+            stderr = stderr_bytes.decode("utf-8") if stderr_bytes else ""
 
             status = "PASS" if exit_code == 0 else "FAIL"
 
@@ -125,13 +129,16 @@ class DockerSandboxService:
                 stdout=stdout,
                 stderr=stderr,
                 exit_code=exit_code,
-                execution_time_sec=execution_time
+                execution_time_sec=execution_time,
             )
         except Exception as e:
             logger.error("Command execution failed", error=str(e))
             return SandboxResult(
-                status="ERROR", stdout="", stderr=str(e),
-                exit_code=-1, execution_time_sec=time.time() - start_time
+                status="ERROR",
+                stdout="",
+                stderr=str(e),
+                exit_code=-1,
+                execution_time_sec=time.time() - start_time,
             )
 
     async def apply_edits(self, edits: list[EditOperation]) -> bool:

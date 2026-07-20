@@ -10,8 +10,9 @@ def empty_state():
         "planner_output": None,
         "stream_events": [],
         "latency_metrics": {},
-        "token_usage": {}
+        "token_usage": {},
     }
+
 
 @pytest.mark.asyncio
 async def test_planner_agent_generates_task_graph(empty_state, mock_llm):

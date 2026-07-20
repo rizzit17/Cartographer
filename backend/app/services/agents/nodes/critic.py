@@ -18,6 +18,7 @@ Ensure all constraints are met."""
         self._emit_event(state, "Reviewing edits and test results...")
 
         import asyncio
+
         await asyncio.sleep(1)
 
         sandbox_res = state.get("sandbox_status")
@@ -34,7 +35,7 @@ Ensure all constraints are met."""
             security_issues=[],
             regression_risks=[],
             missing_tests=[],
-            reasoning="Tests passed, edits look clean." if approved else "Tests failed in sandbox."
+            reasoning="Tests passed, edits look clean." if approved else "Tests failed in sandbox.",
         )
 
         if approved:

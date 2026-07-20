@@ -18,10 +18,11 @@ Condense the conversation history to save token space."""
         self._emit_event(state, "Updating long-term memory...")
 
         import asyncio
+
         await asyncio.sleep(0.5)
 
         state["memory_summary"] = "The user is exploring the auth module."
-        state["next_agent"] = None # Terminal node usually
+        state["next_agent"] = None  # Terminal node usually
 
         self._track_latency(state, "memory_update", start_time)
         return state

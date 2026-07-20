@@ -18,10 +18,11 @@ Include inline citations to the files you used."""
         self._emit_event(state, "Reasoning over codebase context...")
 
         import asyncio
+
         await asyncio.sleep(1)
 
         # MOCK
-        state["proposed_diff"] = None # Not an edit
+        state["proposed_diff"] = None  # Not an edit
         state["next_agent"] = "MemoryAgent"
 
         self._track_latency(state, "reasoning", start_time)

@@ -10,6 +10,7 @@ class Citation(BaseModel):
     content: str
     score: float | None = None
 
+
 class TaskDependency(BaseModel):
     task_id: str
     depends_on: list[str]
@@ -18,10 +19,12 @@ class TaskDependency(BaseModel):
     required_context: list[str]
     risk_level: str
 
+
 class PlannerOutput(BaseModel):
     tasks: list[TaskDependency]
     overall_risk: str
     reasoning: str
+
 
 class BlastRadiusImpact(BaseModel):
     affected_files: list[str]
@@ -31,8 +34,9 @@ class BlastRadiusImpact(BaseModel):
     estimated_risk: str
     visualization_payload: dict[str, Any]
 
+
 class EditOperation(BaseModel):
-    operation_type: str # SEARCH, REPLACE, INSERT, DELETE, MOVE
+    operation_type: str  # SEARCH, REPLACE, INSERT, DELETE, MOVE
     file_path: str
     search_block: str | None = None
     replace_block: str | None = None
@@ -40,8 +44,9 @@ class EditOperation(BaseModel):
     line_start: int | None = None
     line_end: int | None = None
 
+
 class SandboxResult(BaseModel):
-    status: str # PASS, FAIL, TIMEOUT, ERROR
+    status: str  # PASS, FAIL, TIMEOUT, ERROR
     stdout: str
     stderr: str
     exit_code: int
@@ -49,6 +54,7 @@ class SandboxResult(BaseModel):
     coverage_report: str | None = None
     test_report: str | None = None
     git_diff: str | None = None
+
 
 class CriticFeedback(BaseModel):
     approved: bool
@@ -63,6 +69,7 @@ class CriticFeedback(BaseModel):
     missing_tests: list[str]
     reasoning: str
 
+
 class ReflectionFeedback(BaseModel):
     failure_summary: str
     root_cause: str
@@ -70,8 +77,10 @@ class ReflectionFeedback(BaseModel):
     improved_prompt: str
     should_retry: bool
 
+
 class AgentState(TypedDict):
     """LangGraph workflow state for Cartographer multi-agent system."""
+
     session_id: uuid.UUID
     repository_id: uuid.UUID
     user_query: str

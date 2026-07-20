@@ -38,6 +38,7 @@ def upgrade() -> None:
         sa.Column("avatar_url", sa.Text, nullable=True),
         sa.Column("github_id", sa.Integer, nullable=True),
         sa.Column("github_username", sa.String(255), nullable=True),
+        sa.Column("github_access_token", sa.Text, nullable=True),
         sa.Column("role", sa.String(50), nullable=False, server_default="user"),
         sa.Column("is_active", sa.Boolean, nullable=False, server_default=sa.true()),
         sa.Column("is_superuser", sa.Boolean, nullable=False, server_default=sa.false()),
@@ -172,7 +173,7 @@ def upgrade() -> None:
         ),
     )
     # Add the pgvector column (Alembic doesn't know Vector natively)
-    op.execute("ALTER TABLE embeddings ADD COLUMN vector vector(3072)")
+    op.execute("ALTER TABLE embeddings ADD COLUMN vector vector(1536)")
     op.create_index("ix_embeddings_chunk_id", "embeddings", ["chunk_id"])
     op.execute(
         "CREATE UNIQUE INDEX ix_embeddings_chunk_model ON embeddings (chunk_id, model)"

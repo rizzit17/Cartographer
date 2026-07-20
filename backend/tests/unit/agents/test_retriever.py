@@ -1,5 +1,7 @@
 import pytest
+
 from app.services.agents.nodes.retriever import RetrieverAgent
+
 
 @pytest.fixture
 def empty_state():
@@ -15,11 +17,11 @@ def empty_state():
 async def test_retriever_agent_basic(empty_state, mock_llm):
     agent = RetrieverAgent(llm_provider=mock_llm)
     state = await agent.run(empty_state)
-    
+
     assert "retrieval_context" in state
     assert len(state["retrieval_context"]) > 0
     assert state["next_agent"] in ["ReasoningAgent", "CodeEditAgent", "BlastRadiusAgent"]
-    
+
     # Check if stream events were emitted
     events = state["stream_events"]
     assert len(events) >= 2

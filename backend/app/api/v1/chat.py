@@ -12,6 +12,7 @@ Endpoints:
 from __future__ import annotations
 
 import json
+import uuid
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
@@ -19,8 +20,6 @@ import structlog
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-
-import uuid
 
 from app.api.deps import LLM, AgentRepo, CurrentUser
 
@@ -129,7 +128,7 @@ async def send_message(
             from app.services.agents.state import AgentState
 
             orchestrator = AgentOrchestrator(llm_provider=llm)
-            
+
             initial_state: AgentState = {
                 "session_id": session_id,
                 "repository_id": session.repository_id,
@@ -168,7 +167,7 @@ async def send_message(
                     latest_event = events[-1]
                     trace_event = json.dumps({"type": "agent_trace", "content": latest_event["message"]})
                     yield f"data: {trace_event}\n\n"
-                    
+
             # For this scaffolding, we generate a final LLM response summarization
             # based on the final state.
             from app.services.llm.base import Message
@@ -177,7 +176,7 @@ async def send_message(
                 Message(role="system", content="You are Cartographer. Summarize what was just done."),
                 Message(role="user", content=summary_prompt)
             ]
-            
+
             async for token in llm.stream(messages):
                 full_response += token
                 event = json.dumps({"type": "token", "content": token})

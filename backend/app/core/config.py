@@ -116,8 +116,8 @@ class Settings(BaseSettings):
 
     # ── Embedding Providers ───────────────────────────────────────────────
     embedding_provider: Literal["openai", "bge", "nomic"] = "openai"
-    embedding_model: str = "text-embedding-3-large"
-    embedding_dimensions: int = 3072
+    embedding_model: str = "text-embedding-3-small"
+    embedding_dimensions: int = 1536
 
     openai_embedding_base_url: str = "https://api.openai.com/v1"
 

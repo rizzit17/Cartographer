@@ -10,7 +10,6 @@ FROM python:3.12-slim AS base
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
 # Install system dependencies
@@ -34,14 +33,16 @@ FROM base AS deps
 COPY pyproject.toml README.md ./
 
 # Install production dependencies
-RUN uv pip install --system --no-cache -e "."
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install --system -e "." --extra-index-url https://download.pytorch.org/whl/cpu
 
 # ---------------------------------------------------------------------------
 # Stage 3: Development (hot-reload, dev dependencies)
 # ---------------------------------------------------------------------------
 FROM deps AS development
 
-RUN uv pip install --system --no-cache -e ".[dev]"
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install --system -e ".[dev]" --extra-index-url https://download.pytorch.org/whl/cpu
 
 COPY . .
 
@@ -65,9 +66,9 @@ EXPOSE 8000
 
 # Use gunicorn + uvicorn workers for production
 CMD ["uvicorn", "app.main:app", \
-     "--host", "0.0.0.0", \
-     "--port", "8000", \
-     "--workers", "4", \
-     "--loop", "uvloop", \
-     "--http", "httptools", \
-     "--access-log"]
+    "--host", "0.0.0.0", \
+    "--port", "8000", \
+    "--workers", "4", \
+    "--loop", "uvloop", \
+    "--http", "httptools", \
+    "--access-log"]

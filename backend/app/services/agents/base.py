@@ -1,8 +1,8 @@
 import abc
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 import structlog
-from pydantic import BaseModel
 
 from app.services.agents.state import AgentState
 
@@ -14,11 +14,11 @@ class BaseAgent(abc.ABC):
     Enforces standardized interfaces for prompts, inputs, outputs, 
     retry policies, structured logging, and observability.
     """
-    
+
     name: str = "BaseAgent"
     description: str = "Base agent interface."
     max_retries: int = 3
-    
+
     def __init__(self, llm_provider: Any = None):
         self.llm = llm_provider
         self.log = logger.bind(agent=self.name)
@@ -32,7 +32,7 @@ class BaseAgent(abc.ABC):
     async def run(self, state: AgentState) -> AgentState:
         """Execute the agent's core logic on the state."""
         pass
-        
+
     def _emit_event(self, state: AgentState, message: str, level: str = "info") -> AgentState:
         """Append a streaming event to the state for real-time frontend trace."""
         event = {

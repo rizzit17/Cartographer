@@ -1,8 +1,8 @@
 import time
-import json
-from typing import Any
+
 from app.services.agents.base import BaseAgent
 from app.services.agents.state import AgentState, PlannerOutput, TaskDependency
+
 
 class PlannerAgent(BaseAgent):
     name = "PlannerAgent"
@@ -34,13 +34,13 @@ Return a JSON object matching this schema exactly:
 
         # In a real implementation with LangChain/Pydantic AI, we'd invoke the LLM with structured output.
         # Here we mock the structured output for phase completion
-        
+
         prompt = self.get_system_prompt() + f"\n\nUser Query: {state['user_query']}"
-        
+
         # Mocking LLM invocation
         import asyncio
         await asyncio.sleep(1) # simulate latency
-        
+
         # Simulated LLM output
         mock_output = PlannerOutput(
             tasks=[
@@ -64,10 +64,10 @@ Return a JSON object matching this schema exactly:
             overall_risk="MEDIUM",
             reasoning="Standard refactoring flow requires analyzing impact before editing."
         )
-        
+
         state["planner_output"] = mock_output
         state["next_agent"] = "RetrieverAgent"
-        
+
         self._track_latency(state, "planning", start_time)
         self._track_tokens(state, len(prompt.split()), 150)
         self._emit_event(state, "Planning complete.")

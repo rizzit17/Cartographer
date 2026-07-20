@@ -1,8 +1,9 @@
 import os
 import uuid
+from collections.abc import AsyncGenerator
+
 import pytest
 import pytest_asyncio
-from typing import Any, AsyncGenerator
 
 os.environ["ENVIRONMENT"] = "testing"
 os.environ["POSTGRES_DB"] = "cartographer_test"
@@ -12,14 +13,13 @@ os.environ["JWT_SECRET_KEY"] = "test-jwt-secret-key-1234567890123456789012345678
 os.environ["OPENAI_API_KEY"] = "mock-openai-key"
 os.environ["ANTHROPIC_API_KEY"] = "mock-anthropic-key"
 
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
-from fastapi.testclient import TestClient
 from httpx import AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from app.main import app
-from app.db.base import Base
-from app.db.base import get_session
 from app.core.security import create_access_token
+from app.db.base import Base, get_session
+from app.main import app
+
 
 @pytest_asyncio.fixture
 async def db_engine():
@@ -29,9 +29,9 @@ async def db_engine():
     )
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-        
+
     yield engine
-    
+
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
     await engine.dispose()
@@ -75,11 +75,11 @@ async def async_client(override_get_db) -> AsyncGenerator[AsyncClient, None]:
 class MockLLMProvider:
     async def invoke(self, messages, **kwargs):
         return "Mock response"
-        
+
     async def stream(self, messages, **kwargs):
         yield "Mock "
         yield "response"
-        
+
     async def generate_structured(self, messages, schema, **kwargs):
         return schema(**{})
 
@@ -90,10 +90,10 @@ def mock_llm():
 class MockEmbeddingProvider:
     async def embed_query(self, text: str) -> list[float]:
         return [0.1] * 1536
-        
+
     async def embed_documents(self, texts: list[str]) -> list[list[float]]:
         return [[0.1] * 1536 for _ in texts]
-        
+
     @property
     def model_info(self):
         class ModelInfo:
@@ -107,7 +107,7 @@ def mock_embedding():
 
 class MockSandbox:
     async def initialize(self, *args, **kwargs): return True
-    async def execute(self, cmd, **kwargs): 
+    async def execute(self, cmd, **kwargs):
         from app.services.agents.state import SandboxResult
         return SandboxResult(status="PASS", stdout="Success", stderr="", exit_code=0, execution_time_sec=0.1)
     async def apply_edits(self, edits): return True

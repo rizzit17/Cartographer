@@ -6,15 +6,12 @@ Exposes the repository knowledge graph for visualization in React Flow.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import uuid  # noqa: TC003
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
-if TYPE_CHECKING:
-    import uuid
-
-    from app.api.deps import CurrentUser, GraphRepo, RepositoryRepo
+from app.api.deps import CurrentUser, GraphRepo, RepositoryRepo  # noqa: TC001, TC002
 
 router = APIRouter(prefix="/graph")
 

@@ -27,10 +27,10 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Use the sync DB URL for migrations
-alembic_url = os.getenv("ALEMBIC_DATABASE_URL") or os.getenv("DATABASE_URL", "").replace(
-    "postgresql+asyncpg://", "postgresql+psycopg2://"
-)
+# Use the sync DB URL for migrations built dynamically by config
+from app.core.config import get_settings
+settings = get_settings()
+alembic_url = settings.alembic_database_url
 config.set_main_option("sqlalchemy.url", alembic_url)
 
 target_metadata = Base.metadata

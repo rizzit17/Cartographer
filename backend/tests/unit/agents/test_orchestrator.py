@@ -1,7 +1,9 @@
-import pytest
 import uuid
+
+import pytest
+
 from app.services.agents.orchestrator import AgentOrchestrator
-from app.services.agents.state import AgentState
+
 
 @pytest.fixture
 def orchestrator(mock_llm, mock_sandbox):
@@ -49,7 +51,7 @@ async def test_supervisor_routing_query(orchestrator, empty_state):
     """Test that a basic query routes to Retriever."""
     state = empty_state.copy()
     state["user_query"] = "What does the auth service do?"
-    
+
     # Run just the supervisor node
     result = await orchestrator.nodes["SupervisorAgent"].run(state)
     assert result["next_agent"] == "RetrieverAgent"
@@ -59,7 +61,7 @@ async def test_supervisor_routing_refactor(orchestrator, empty_state):
     """Test that a refactor query routes to Planner."""
     state = empty_state.copy()
     state["user_query"] = "Refactor the auth service to use JWT"
-    
+
     result = await orchestrator.nodes["SupervisorAgent"].run(state)
     assert result["next_agent"] == "PlannerAgent"
 
@@ -68,12 +70,12 @@ async def test_full_query_workflow(orchestrator, empty_state):
     """Test Supervisor -> Retriever -> Reasoning -> Memory"""
     state = empty_state.copy()
     state["user_query"] = "Explain the architecture."
-    
+
     nodes_visited = []
     async for s in orchestrator.stream_run(state):
         if s.get("stream_events"):
             nodes_visited.append(s["stream_events"][-1]["agent"])
-        
+
     assert "SupervisorAgent" in nodes_visited
     assert "RetrieverAgent" in nodes_visited
     assert "ReasoningAgent" in nodes_visited
@@ -85,12 +87,12 @@ async def test_full_refactor_workflow(orchestrator, empty_state):
     """Test the long execution loop ending in a Pass"""
     state = empty_state.copy()
     state["user_query"] = "Fix the authentication bug."
-    
+
     nodes_visited = []
     async for s in orchestrator.stream_run(state):
         if s.get("stream_events"):
             nodes_visited.append(s["stream_events"][-1]["agent"])
-        
+
     assert "SupervisorAgent" in nodes_visited
     assert "PlannerAgent" in nodes_visited
     assert "BlastRadiusAgent" in nodes_visited
@@ -106,7 +108,7 @@ def failing_orchestrator(mock_llm):
     # Create an orchestrator with a sandbox that always fails
     class FailingSandbox:
         async def initialize(self, *args, **kwargs): return True
-        async def execute(self, cmd, **kwargs): 
+        async def execute(self, cmd, **kwargs):
             from app.services.agents.state import SandboxResult
             return SandboxResult(status="FAIL", stdout="", stderr="Build failed", exit_code=1, execution_time_sec=0.1)
         async def apply_edits(self, edits): return True
@@ -124,16 +126,16 @@ async def test_reflection_escalation(failing_orchestrator, empty_state):
     """Test the reflection loop aborts after max retries."""
     state = empty_state.copy()
     state["user_query"] = "Fix the bug."
-    
+
     # We will just run the graph starting from CodeEditAgent to simulate entering the execution loop
     # Or start from Supervisor and wait for it to abort.
     # Since failing sandbox always fails, it will loop exactly max_retries (3) times.
-    
+
     nodes_visited = []
     async for s in failing_orchestrator.stream_run(state):
         if s.get("stream_events"):
             nodes_visited.append(s["stream_events"][-1]["agent"])
-            
+
     # Count occurrences of ReflectionAgent
     reflection_count = nodes_visited.count("ReflectionAgent")
     assert reflection_count == 4

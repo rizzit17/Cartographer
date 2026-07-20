@@ -1,8 +1,11 @@
-import pytest
 import uuid
-from app.services.retrieval.hybrid_retriever import HybridRetriever
+
+import pytest
+
 from app.db.models.chunk import CodeChunk
 from app.db.models.graph_node import GraphNode
+from app.services.retrieval.hybrid_retriever import HybridRetriever
+
 
 @pytest.fixture
 def mock_chunk_repo(mocker):
@@ -38,24 +41,24 @@ def mock_graph_repo(mocker):
 @pytest.mark.asyncio
 async def test_hybrid_retrieval(mock_chunk_repo, mock_graph_repo, mock_llm, mock_embedding):
     retriever = HybridRetriever(
-        llm_provider=mock_llm, 
-        embedding_provider=mock_embedding, 
-        chunk_repo=mock_chunk_repo, 
+        llm_provider=mock_llm,
+        embedding_provider=mock_embedding,
+        chunk_repo=mock_chunk_repo,
         graph_repo=mock_graph_repo
     )
-    
+
     results = await retriever.retrieve(
         query="How does auth work?",
         repository_id=uuid.uuid4(),
         top_k_final=5
     )
-    
+
     # Verify we got chunks back
     assert len(results) > 0
     # Verify reciprocal rank fusion sorted them
     assert "file_path" in results[0]
     assert "content" in results[0]
-    
+
     # Verify repos were called
     mock_chunk_repo.vector_search.assert_called_once()
     mock_chunk_repo.keyword_search.assert_called_once()

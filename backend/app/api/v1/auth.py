@@ -16,12 +16,12 @@ GitHub OAuth (plug-in later):
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING
 
 import structlog
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, EmailStr, Field
 
+from app.api.deps import CurrentUser, DbSession, UserRepo  # noqa: TC001, TC002
 from app.core.config import get_settings
 from app.core.security import (
     create_access_token,
@@ -30,9 +30,6 @@ from app.core.security import (
     hash_password,
     verify_password,
 )
-
-if TYPE_CHECKING:
-    from app.api.deps import CurrentUser, DbSession, UserRepo
 
 logger = structlog.get_logger(__name__)
 router = APIRouter(prefix="/auth")

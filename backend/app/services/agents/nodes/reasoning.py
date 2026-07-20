@@ -1,6 +1,8 @@
 import time
+
 from app.services.agents.base import BaseAgent
 from app.services.agents.state import AgentState
+
 
 class ReasoningAgent(BaseAgent):
     name = "ReasoningAgent"
@@ -14,13 +16,13 @@ Include inline citations to the files you used."""
     async def run(self, state: AgentState) -> AgentState:
         start_time = time.time()
         self._emit_event(state, "Reasoning over codebase context...")
-        
+
         import asyncio
         await asyncio.sleep(1)
-        
+
         # MOCK
         state["proposed_diff"] = None # Not an edit
         state["next_agent"] = "MemoryAgent"
-        
+
         self._track_latency(state, "reasoning", start_time)
         return state

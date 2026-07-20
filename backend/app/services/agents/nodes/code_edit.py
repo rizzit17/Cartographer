@@ -1,6 +1,8 @@
 import time
+
 from app.services.agents.base import BaseAgent
 from app.services.agents.state import AgentState, EditOperation
+
 
 class CodeEditAgent(BaseAgent):
     name = "CodeEditAgent"
@@ -13,10 +15,10 @@ Output JSON with a list of SEARCH/REPLACE operations that cleanly apply the refa
     async def run(self, state: AgentState) -> AgentState:
         start_time = time.time()
         self._emit_event(state, "Generating structured search/replace edits...")
-        
+
         import asyncio
         await asyncio.sleep(1)
-        
+
         # MOCK
         state["edit_operations"] = [
             EditOperation(
@@ -26,8 +28,8 @@ Output JSON with a list of SEARCH/REPLACE operations that cleanly apply the refa
                 replace_block="app = FastAPI(title='Cartographer')"
             )
         ]
-        
+
         state["next_agent"] = "TestRunnerAgent"
-        
+
         self._track_latency(state, "code_edit", start_time)
         return state

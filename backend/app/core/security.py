@@ -17,9 +17,9 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any, Literal
 
+import bcrypt
 import structlog
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 
 from app.core.config import get_settings
 from app.core.exceptions import InvalidTokenError
@@ -33,17 +33,19 @@ settings = get_settings()
 # ---------------------------------------------------------------------------
 # Password hashing
 # ---------------------------------------------------------------------------
-_pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
 def hash_password(plain: str) -> str:
     """Return a bcrypt hash of the plaintext password."""
-    return _pwd_context.hash(plain)
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(plain.encode('utf-8'), salt)
+    return hashed.decode('ascii')
 
 
 def verify_password(plain: str, hashed: str) -> bool:
     """Return True if plain matches hashed."""
-    return _pwd_context.verify(plain, hashed)
+    try:
+        return bcrypt.checkpw(plain.encode('utf-8'), hashed.encode('ascii'))
+    except ValueError:
+        return False
 
 
 # ---------------------------------------------------------------------------

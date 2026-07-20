@@ -1,42 +1,44 @@
 import uuid
-from typing import Any, Dict, List, Optional, TypedDict
-from pydantic import BaseModel, Field
+from typing import Any, TypedDict
+
+from pydantic import BaseModel
+
 
 class Citation(BaseModel):
     file_path: str
-    line_number: Optional[int] = None
+    line_number: int | None = None
     content: str
-    score: Optional[float] = None
+    score: float | None = None
 
 class TaskDependency(BaseModel):
     task_id: str
-    depends_on: List[str]
+    depends_on: list[str]
     description: str
     expected_output: str
-    required_context: List[str]
+    required_context: list[str]
     risk_level: str
 
 class PlannerOutput(BaseModel):
-    tasks: List[TaskDependency]
+    tasks: list[TaskDependency]
     overall_risk: str
     reasoning: str
 
 class BlastRadiusImpact(BaseModel):
-    affected_files: List[str]
-    affected_functions: List[str]
+    affected_files: list[str]
+    affected_functions: list[str]
     dependency_depth: int
     confidence: float
     estimated_risk: str
-    visualization_payload: Dict[str, Any]
+    visualization_payload: dict[str, Any]
 
 class EditOperation(BaseModel):
     operation_type: str # SEARCH, REPLACE, INSERT, DELETE, MOVE
     file_path: str
-    search_block: Optional[str] = None
-    replace_block: Optional[str] = None
-    insert_block: Optional[str] = None
-    line_start: Optional[int] = None
-    line_end: Optional[int] = None
+    search_block: str | None = None
+    replace_block: str | None = None
+    insert_block: str | None = None
+    line_start: int | None = None
+    line_end: int | None = None
 
 class SandboxResult(BaseModel):
     status: str # PASS, FAIL, TIMEOUT, ERROR
@@ -44,21 +46,21 @@ class SandboxResult(BaseModel):
     stderr: str
     exit_code: int
     execution_time_sec: float
-    coverage_report: Optional[str] = None
-    test_report: Optional[str] = None
-    git_diff: Optional[str] = None
+    coverage_report: str | None = None
+    test_report: str | None = None
+    git_diff: str | None = None
 
 class CriticFeedback(BaseModel):
     approved: bool
     confidence: float
-    correctness_issues: List[str]
-    architecture_issues: List[str]
-    style_issues: List[str]
-    complexity_issues: List[str]
-    performance_issues: List[str]
-    security_issues: List[str]
-    regression_risks: List[str]
-    missing_tests: List[str]
+    correctness_issues: list[str]
+    architecture_issues: list[str]
+    style_issues: list[str]
+    complexity_issues: list[str]
+    performance_issues: list[str]
+    security_issues: list[str]
+    regression_risks: list[str]
+    missing_tests: list[str]
     reasoning: str
 
 class ReflectionFeedback(BaseModel):
@@ -73,37 +75,37 @@ class AgentState(TypedDict):
     session_id: uuid.UUID
     repository_id: uuid.UUID
     user_query: str
-    conversation_history: List[Dict[str, Any]]
-    
+    conversation_history: list[dict[str, Any]]
+
     # Context
-    retrieval_context: List[Dict[str, Any]]
-    graph_context: List[Dict[str, Any]]
-    selected_files: List[str]
-    selected_symbols: List[str]
-    
+    retrieval_context: list[dict[str, Any]]
+    graph_context: list[dict[str, Any]]
+    selected_files: list[str]
+    selected_symbols: list[str]
+
     # Agent Outputs
-    planner_output: Optional[PlannerOutput]
-    blast_radius: Optional[BlastRadiusImpact]
-    proposed_diff: Optional[str]
-    edit_operations: List[EditOperation]
-    
+    planner_output: PlannerOutput | None
+    blast_radius: BlastRadiusImpact | None
+    proposed_diff: str | None
+    edit_operations: list[EditOperation]
+
     # Sandbox & Validation
-    sandbox_status: Optional[SandboxResult]
-    test_results: Optional[Dict[str, Any]]
-    critic_feedback: Optional[CriticFeedback]
-    reflection_feedback: Optional[ReflectionFeedback]
-    execution_logs: List[Dict[str, Any]]
-    
+    sandbox_status: SandboxResult | None
+    test_results: dict[str, Any] | None
+    critic_feedback: CriticFeedback | None
+    reflection_feedback: ReflectionFeedback | None
+    execution_logs: list[dict[str, Any]]
+
     # Orchestration State
     current_agent: str
-    next_agent: Optional[str]
+    next_agent: str | None
     retry_count: int
     confidence_score: float
-    
+
     # Observability & Metrics
-    latency_metrics: Dict[str, float]
-    token_usage: Dict[str, int]
+    latency_metrics: dict[str, float]
+    token_usage: dict[str, int]
     memory_summary: str
-    citations: List[Citation]
-    stream_events: List[Dict[str, Any]]
-    errors: List[str]
+    citations: list[Citation]
+    stream_events: list[dict[str, Any]]
+    errors: list[str]

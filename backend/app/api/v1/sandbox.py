@@ -7,15 +7,13 @@ Full implementation in Phase 6.
 
 from __future__ import annotations
 
-import uuid
+import uuid  # noqa: TC003
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 
-if TYPE_CHECKING:
-    from app.api.deps import CurrentUser, RepositoryRepo
+from app.api.deps import CurrentUser, RepositoryRepo  # noqa: TC001, TC002
 
 router = APIRouter(prefix="/sandbox")
 

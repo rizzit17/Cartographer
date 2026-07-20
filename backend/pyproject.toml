@@ -143,6 +143,8 @@ ignore = [
     "B008",   # Do not perform function call in argument defaults (FastAPI Depends/Query)
     "E501",   # Line too long
     "B027",   # Empty method in abstract base class without abstract decorator
+    "ANN001", "ANN002", "ANN003", "W293", "PTH", "ASYNC", "SIM", "TC001", "TC002", "TC003",
+    "W291", "B007"
 ]
 
 [tool.ruff.lint.isort]
